@@ -2,6 +2,9 @@
 """
 The VidICN Model Solver
 
+REMARK:
+1. The unit used in the model is megabyte (MB)
+
 Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
 2013.01.11
 """
@@ -10,17 +13,64 @@ import os
 import sys
 import time
 
-# Import PuLP modeler functions
+from numpy import *
 from pulp import *
 
+
+# Model constants
+
+M = 10      # Number of routers
+N = 10000   # Number of files
+P = 100     # Number of chunks in a file
+
+
+# Help functions: Prepare model parameters before solving the LIP problem
+
+def prepare_file_popularity():
+    filePopularity = zeros((N), dtype = float64) + 1.0 / N
+    return filePopularity
+
+def prepare_filesize_distrib():
+    fileSize = zeros((N), dtype = float64) + 20
+    return fileSize
+
+def prepare_chunk_popularity():
+    chunkPopularity = zeros((N, P), dtype = float64) + 1.0 / P
+    return chunkPopularity
+
+def prepare_chunksize_distrib():
+    chunkSize = zeros((N, P), dtype = float64) + 20.0 / P
+    return chunkSize
+
+def prepare_cachesize():
+    cache = zeros((M), dtype = float64) + 1024
+    return cache
+
+def prepare_content_distrib_var():
+    Y = zeros((N, P, M), dtype = int64)
+    return Y
+
+def prepare_decision_var():
+    X = zeros((N, P, M), dtype = int64)
+    return X
+
+
+# Model Solver
 
 class vidicn(object):
     """The vidicn LP solver"""
     def __init__(self):
-        self.x = set(['1', '2'])
-        self.lpfile = open('vidicn.lp', 'w')
-        self.logf = None
         self.usedtime = time.time()
+        pass
+
+    def init_model(self):
+        self.filePopularity = prepare_file_popularity()
+        self.fileSize = prepare_filesize_distrib()
+        self.chunkPopularity = prepare_chunk_popularity()
+        self.chunkSize = prepare_chunksize_distrib()
+        self.cache = prepare_cachesize()
+        self.Y = prepare_content_distrib_var()
+        self.X = prepare_decision_var()
         pass
 
     def solve(self):
@@ -42,9 +92,7 @@ class vidicn(object):
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
-        if self.logf is not None:
-            self.logf.write("Time overheads: %.3f s\n" % (self.usedtime))
-            self.logf.flush()
+
         pass
 
     def set_objective(self):
@@ -94,8 +142,12 @@ class vidicn(object):
     pass
 
 
+# Main function, start the solver here. Let's rock!
+
 if __name__ == "__main__":
     obj = vidicn()
-    obj.solve()
-    obj.output_result()
+    obj.init_model()
+    #obj.solve()
+    #obj.output_result()
+
     sys.exit(0)
