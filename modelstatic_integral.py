@@ -22,7 +22,7 @@ from pulp import *
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
 N = 100     # Number of files
-P = 100     # Number of chunks in a file
+P = 1       # Number of chunks in a file
 K = 1       # Number of copies on the path
 C = 100     # Cache size
 
@@ -38,7 +38,7 @@ def prepare_filesize_distrib():
     return fileSize
 
 def prepare_chunk_popularity():
-    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))])
+    chunkPopularity = ones([N, P])
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
@@ -91,7 +91,7 @@ class ModelStatic(object):
         self.set_ncopy_constraints()
 
         # The problem data is written to an .lp file
-        self.problem.writeLP("result_modelstatic.lp")
+        self.problem.writeLP("result_modelstatic_integral.lp")
         # The problem is solved using PuLP's choice of Solver
         #self.problem.solve(COIN())
         self.problem.solve(GLPK())
@@ -129,14 +129,14 @@ class ModelStatic(object):
                 for k in range(M):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     constraints.append(self.x_vars[i_j_k])
-                self.problem += lpSum(constraints) <= K, ("chunk %i_%i NCopy constraint" % (i,j))
+                self.problem += lpSum(constraints) <= N, ("chunk %i_%i NCopy constraint" % (i,j))
         pass
 
     def output_result(self):
         # The status of the solution is printed to the screen
         print "Status:", LpStatus[self.problem.status]
         # Each of the variables is printed with it's resolved optimum value
-        f = open("result_modelstatic.sol", "w")
+        f = open("result_modelstatic_integral.sol", "w")
         for v in self.problem.variables():
             f.write("%s = %.2f\n" % (v.name, v.varValue))
         pass
