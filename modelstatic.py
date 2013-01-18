@@ -34,11 +34,12 @@ def prepare_file_popularity():
     return filePopularity
 
 def prepare_filesize_distrib():
-    fileSize = random.uniform(size=N) * 20 + 10
+    fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
 def prepare_chunk_popularity():
-    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))])
+    #chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))])
+    chunkPopularity = array([sort(random.weibull(1.0, P))[::-1] for x in range(N)])
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
