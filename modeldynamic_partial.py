@@ -19,31 +19,39 @@ from pulp import *
 
 # Model constants
 
-M = 10      # Number of routers
+SEED = 123  # Random seed for the simulation
+M = 5       # Number of routers
 N = 100     # Number of files
 P = 100     # Number of chunks in a file
+K = 1       # Number of copies on the path
+C = 100     # Cache size
 
+LOG = "result_modeldynamic_partial"
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
 def prepare_file_popularity():
-    filePopularity = zeros((N), dtype = float64) + 1.0 / N
+    k = 0.513
+    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 100
     return filePopularity
 
 def prepare_filesize_distrib():
-    fileSize = zeros((N), dtype = float64) + 20
+    random.seed(SEED + 5)
+    fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
 def prepare_chunk_popularity():
-    chunkPopularity = zeros((N, P), dtype = float64) + 1.0 / P
+    random.seed(SEED + 7)
+    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))]) * 100
+    #chunkPopularity = array([sort(random.weibull(1.0, P))[::-1] for x in range(N)]) * 100
     return chunkPopularity
 
-def prepare_chunksize_distrib():
-    chunkSize = zeros((N, P), dtype = float64) + 20.0 / P
+def prepare_chunksize_distrib(fileSize):
+    chunkSize = array([ [x / P] * P for x in fileSize ])
     return chunkSize
 
 def prepare_cachesize():
-    cache = zeros((M), dtype = float64) + 1024
+    cache = zeros((M), dtype = float64) + C
     return cache
 
 def prepare_content_distrib_var():
@@ -57,7 +65,7 @@ def prepare_decision_var():
 
 # Model Solver
 
-class vidicn(object):
+class ModelDynamic(object):
     """The vidicn LP solver"""
     def __init__(self):
         self.usedtime = time.time()
@@ -67,10 +75,11 @@ class vidicn(object):
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
         self.chunkPopularity = prepare_chunk_popularity()
-        self.chunkSize = prepare_chunksize_distrib()
+        self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
         self.Y = prepare_content_distrib_var()
         self.X = prepare_decision_var()
+        self.req = (25, 11)
         pass
 
     def solve(self):
@@ -87,10 +96,9 @@ class vidicn(object):
         self.set_ncopy_constraints()
 
         # The problem data is written to an .lp file
-        self.problem.writeLP("vidicn.lp")
+        self.problem.writeLP(LOG + ".lp")
         # The problem is solved using PuLP's choice of Solver
-        #self.problem.solve(COIN())
-        self.problem.solve(GLPK())
+        self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
@@ -105,7 +113,7 @@ class vidicn(object):
                 for k in range(M):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     objective.append(tmp1 * (M - k) * self.x_vars[i_j_k])
-        self.problem += lpSum(objective), "Maximize byt hit rate and footprint reduction"
+        self.problem += lpSum(objective), "Maximize byte hit rate and footprint reduction"
         pass
 
     def set_cache_constraints(self):
@@ -115,6 +123,8 @@ class vidicn(object):
                 for j in range(P):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     constraints.append(self.chunkSize[i,j] * self.x_vars[i_j_k])
+            t, u = self.req
+            constraints.append(self.chunkSize[t,u] * (1 - self.Y[t,u,k]))
             self.problem += lpSum(constraints) <= self.cache[k], ("cache %i capacity constraint" % k)
         pass
 
@@ -125,16 +135,23 @@ class vidicn(object):
                 for k in range(M):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     constraints.append(self.x_vars[i_j_k])
-                self.problem += lpSum(constraints) <= 1.0, ("chunk %i_%i NCopy constraint" % (i,j))
+                self.problem += lpSum(constraints) <= K, ("chunk %i_%i KCopy constraint" % (i,j))
         pass
 
     def output_result(self):
         # The status of the solution is printed to the screen
         print "Status:", LpStatus[self.problem.status]
         # Each of the variables is printed with it's resolved optimum value
-        f = open("vidicn.sol", "w")
+        f = open(LOG + ".sol", "w")
         for v in self.problem.variables():
             f.write("%s = %.2f\n" % (v.name, v.varValue))
+        pass
+
+    def output_chunk_info(self, chunkSize, chunkPopularity):
+        f = open(LOG + ".chunk", "w")
+        for i in range(N):
+            for j in range(P):
+                f.write("%i %i %f %f\n" % (i, j, chunkSize[i][j], chunkPopularity[i][j]))
         pass
 
     pass
@@ -143,9 +160,10 @@ class vidicn(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    obj = vidicn()
+    obj = ModelDynamic()
     obj.init_model()
     obj.solve()
     obj.output_result()
+    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
 
     sys.exit(0)

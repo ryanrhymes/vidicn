@@ -72,10 +72,9 @@ def calculate_performance(request, cache, chunk, integral=True):
             index = where(cache[rf][rc] == 1)[0][0] + 1
             FP += chunk[rf][rc] * index 
         totalByte += chunk[rf][rc]
-        totalFP += chunk[rf][rc] * 6 # Liang: need fix
     HR /= len(request)
     byteHR /= totalByte
-    FPR = (totalFP - FP) / totalFP
+    FPR = (totalByte * 6 - FP) / (totalByte * 6)
     print HR, byteHR, FPR
     pass
 

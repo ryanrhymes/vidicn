@@ -95,7 +95,7 @@ class ModelStatic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp")
         # The problem is solved using PuLP's choice of Solver
-        self.problem.solve(GLPK(options=['--mipgap','0.001']))
+        self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)

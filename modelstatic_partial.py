@@ -42,8 +42,8 @@ def prepare_filesize_distrib():
 
 def prepare_chunk_popularity():
     random.seed(SEED + 7)
-    #chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))])
-    chunkPopularity = array([sort(random.weibull(1.0, P))[::-1] for x in range(N)]) * 100
+    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))]) * 100
+    #chunkPopularity = array([sort(random.weibull(0.8, P))[::-1] for x in range(N)]) * 100
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
