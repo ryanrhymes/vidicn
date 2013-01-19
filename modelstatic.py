@@ -30,14 +30,17 @@ C = 100     # Cache size
 # Help functions: Prepare model parameters before solving the LIP problem
 
 def prepare_file_popularity():
+    random.seed(SEED + 3)
     filePopularity = sort(random.weibull(0.513, N))[::-1]
     return filePopularity
 
 def prepare_filesize_distrib():
+    random.seed(SEED + 5)
     fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
 def prepare_chunk_popularity():
+    random.seed(SEED + 7)
     #chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))])
     chunkPopularity = array([sort(random.weibull(1.0, P))[::-1] for x in range(N)])
     return chunkPopularity
@@ -68,7 +71,6 @@ class ModelStatic(object):
         pass
 
     def init_model(self):
-        random.seed(SEED)
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
         self.chunkPopularity = prepare_chunk_popularity()
