@@ -30,8 +30,8 @@ C = 100     # Cache size
 # Help functions: Prepare model parameters before solving the LIP problem
 
 def prepare_file_popularity():
-    random.seed(SEED + 3)
-    filePopularity = sort(random.weibull(0.513, N))[::-1]
+    k = 0.513
+    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ])
     return filePopularity
 
 def prepare_filesize_distrib():

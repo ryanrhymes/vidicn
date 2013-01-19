@@ -20,8 +20,10 @@ R = 100000  # Number of requests
 
 def request_weibull():
     """Generate weibull request pattern"""
-    reqFile = random.weibull(1.0, R)
-    reqChunk = random.weibull(1.0, R)
+    reqFile = sort(random.weibull(1.0, 10*R))[0 : R]
+    random.shuffle(reqFile)
+    reqChunk = sort(random.weibull(1.0, 10*R))[0 : R]
+    random.shuffle(reqChunk)
     return reqFile, reqChunk
 
 def output_request(reqFile, reqChunk):
