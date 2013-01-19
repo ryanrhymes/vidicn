@@ -3,7 +3,7 @@
 Given the content distribution file and request trace, calculate
 the hit rate and footprint reduction.
 
-Usage: app.py request_trace cache_trace
+Usage: app.py request_trace cache_trace chunk_trace
 
 Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
 2013.01.18
@@ -34,14 +34,19 @@ def load_cache(ifn):
         cache[int(x)][int(y)][int(z)] = cached
     return cache
 
-def load_cache_partial(lines):
-    print "load partial caching trace ..."
-    pass
-
-def load_cache_integral(lines):
-    print "load integral caching trace ..."
-    routers, files, chunks = get_model_parameter(lines)
-    pass
+def load_chunk(ifn):
+    print "load chunk info ..."
+    lines = open(ifn, 'r').readlines()
+    files, chunks = (0, 0)
+    for line in lines:
+        x, y, s, t = line.split()
+        files = max(files, int(x))
+        chunks = max(chunks, int(y))
+    chunk = zeros((files + 1, chunks + 1))
+    for line in lines:
+        x, y, s, t = line.split()
+        chunk[int(x)][int(y)] = float(s)
+    return chunk
 
 def get_model_parameter(lines):
     files, chunks, routers = (0, 0, 0)
@@ -52,15 +57,26 @@ def get_model_parameter(lines):
         routers = max(routers, int(z))
     return files, chunks, routers
 
-def calculate_performance(request, cache, integral=True):
+def calculate_performance(request, cache, chunk, integral=True):
     print "calculating performance ..."
-    HR = 0
+    HR = 0.0
+    byteHR = 0.0
+    totalByte = 0.0
+    FP = 0.0
+    totalFP = 0.0
     for rf, rc in request:
         rc = 0 if integral else rc
         if 1 in cache[rf][rc]:
             HR += 1.0
+            byteHR += chunk[rf][rc]
+            index = where(cache[rf][rc] == 1)[0][0] + 1
+            FP += chunk[rf][rc] * index 
+        totalByte += chunk[rf][rc]
+        totalFP += chunk[rf][rc] * 6 # Liang: need fix
     HR /= len(request)
-    print HR
+    byteHR /= totalByte
+    FPR = (totalFP - FP) / totalFP
+    print HR, byteHR, FPR
     pass
 
 
@@ -69,6 +85,7 @@ def calculate_performance(request, cache, integral=True):
 if __name__ == "__main__":
     request = load_request(sys.argv[1])
     cache = load_cache(sys.argv[2])
-    calculate_performance(request, cache)
+    chunk = load_chunk(sys.argv[3])
+    calculate_performance(request, cache, chunk)
 
     sys.exit(0)

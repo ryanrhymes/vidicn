@@ -142,6 +142,13 @@ class ModelStatic(object):
             f.write("%s = %.2f\n" % (v.name, v.varValue))
         pass
 
+    def output_chunk_info(self, chunkSize, chunkPopularity):
+        f = open("result_modelstatic_integral.chunk", "w")
+        for i in range(N):
+            for j in range(P):
+                f.write("%i %i %f %f\n" % (i, j, chunkSize[i][j], chunkPopularity[i][j]))
+        pass
+
     pass
 
 
@@ -152,5 +159,6 @@ if __name__ == "__main__":
     obj.init_model()
     obj.solve()
     obj.output_result()
+    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
 
     sys.exit(0)
