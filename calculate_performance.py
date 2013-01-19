@@ -52,7 +52,15 @@ def get_model_parameter(lines):
         routers = max(routers, int(z))
     return files, chunks, routers
 
-def calculate_performance(request, cache):
+def calculate_performance(request, cache, integral=True):
+    byteHR = 0
+    for rf, rc in request:
+        rc = 0 if integral else rc
+        print rf, rc
+        if 1 in cache[rf][rc]:
+            byteHR += 1.0
+    byteHR /= len(request)
+    print byteHR
     pass
 
 
@@ -61,5 +69,6 @@ def calculate_performance(request, cache):
 if __name__ == "__main__":
     request = load_request(sys.argv[1])
     cache = load_cache(sys.argv[2])
+    calculate_performance(request, cache)
 
     sys.exit(0)

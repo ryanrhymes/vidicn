@@ -25,8 +25,8 @@ def request_weibull():
     return reqFile, reqChunk
 
 def output_request(reqFile, reqChunk):
-    norma = N / max(reqFile)
-    normb = P / max(reqChunk)
+    norma = (N - 1) / max(reqFile)
+    normb = (P - 1) / max(reqChunk)
     for i in range(R):
         print (int) (reqFile[i] * norma), (int) (reqChunk[i] * normb)
     pass
