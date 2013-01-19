@@ -110,7 +110,7 @@ class ModelStatic(object):
                 for k in range(M):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     objective.append(tmp1 * (M - k) * self.x_vars[i_j_k])
-        self.problem += lpSum(objective), "Maximize byt hit rate and footprint reduction"
+        self.problem += lpSum(objective), "Maximize byte hit rate and footprint reduction"
         pass
 
     def set_cache_constraints(self):

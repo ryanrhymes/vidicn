@@ -21,10 +21,10 @@ from pulp import *
 
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
-N = 100     # Number of files
-P = 100     # Number of chunks in a file
+N = 50     # Number of files
+P = 5     # Number of chunks in a file
 K = 1       # Number of copies on the path
-C = 100     # Cache size
+C = 50     # Cache size
 
 
 # Help functions: Prepare model parameters before solving the LIP problem
@@ -36,7 +36,7 @@ def prepare_file_popularity():
 
 def prepare_filesize_distrib():
     random.seed(SEED + 5)
-    fileSize = random.uniform(size=N) * 10 + 20
+    fileSize = random.uniform(size=N) * 10 + 10
     return fileSize
 
 def prepare_chunk_popularity():
@@ -98,6 +98,7 @@ class ModelStatic(object):
         # The problem is solved using PuLP's choice of Solver
         #self.problem.solve(COIN())
         self.problem.solve(GLPK())
+        #self.problem.solve(GLPK(options=['--mipgap', 0.01])
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
@@ -112,7 +113,7 @@ class ModelStatic(object):
                 for k in range(M):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     objective.append(tmp1 * (M - k) * self.x_vars[i_j_k])
-        self.problem += lpSum(objective), "Maximize byt hit rate and footprint reduction"
+        self.problem += lpSum(objective), "Maximize byte hit rate and footprint reduction"
         pass
 
     def set_cache_constraints(self):
