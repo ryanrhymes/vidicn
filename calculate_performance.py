@@ -54,13 +54,13 @@ def get_model_parameter(lines):
 
 def calculate_performance(request, cache, integral=True):
     print "calculating performance ..."
-    byteHR = 0
+    HR = 0
     for rf, rc in request:
         rc = 0 if integral else rc
         if 1 in cache[rf][rc]:
-            byteHR += 1.0
-    byteHR /= len(request)
-    print byteHR
+            HR += 1.0
+    HR /= len(request)
+    print HR
     pass
 
 
