@@ -130,7 +130,7 @@ class ModelStatic(object):
                 for k in range(M):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     constraints.append(self.x_vars[i_j_k])
-                self.problem += lpSum(constraints) <= K, ("chunk %i_%i NCopy constraint" % (i,j))
+                self.problem += lpSum(constraints) <= K, ("chunk %i_%i KCopy constraint" % (i,j))
         pass
 
     def output_result(self):
