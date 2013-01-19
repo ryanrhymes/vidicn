@@ -21,8 +21,8 @@ from pulp import *
 
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
-N = 50     # Number of files
-P = 10     # Number of chunks in a file
+N = 100     # Number of files
+P = 100     # Number of chunks in a file
 K = 1       # Number of copies on the path
 C = 100     # Cache size
 
@@ -31,12 +31,12 @@ C = 100     # Cache size
 
 def prepare_file_popularity():
     k = 0.513
-    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 10**10
+    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 100
     return filePopularity
 
 def prepare_filesize_distrib():
     random.seed(SEED + 5)
-    fileSize = random.uniform(size=N) * 10 + 10
+    fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
 def prepare_chunk_popularity():
@@ -96,9 +96,7 @@ class ModelStatic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP("result_modelstatic.lp")
         # The problem is solved using PuLP's choice of Solver
-        #self.problem.solve(COIN())
-        self.problem.solve(GLPK())
-        #self.problem.solve(GLPK(options=['--mipgap', 0.01])
+        self.problem.solve(GLPK(options=['--mipgap','0.005', '--cuts']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
@@ -145,6 +143,13 @@ class ModelStatic(object):
             f.write("%s = %.2f\n" % (v.name, v.varValue))
         pass
 
+    def output_chunk_info(self, chunkSize, chunkPopularity):
+        f = open("result_modelstatic.chunk", "w")
+        for i in range(N):
+            for j in range(P):
+                f.write("%i %i %f %f\n" % (i, j, chunkSize[i][j], chunkPopularity[i][j]))
+        pass
+
     pass
 
 
@@ -155,5 +160,6 @@ if __name__ == "__main__":
     obj.init_model()
     obj.solve()
     obj.output_result()
+    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
 
     sys.exit(0)

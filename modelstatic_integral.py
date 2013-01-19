@@ -31,7 +31,7 @@ C = 100     # Cache size
 
 def prepare_file_popularity():
     k = 0.513
-    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ])
+    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 100
     return filePopularity
 
 def prepare_filesize_distrib():
@@ -94,8 +94,7 @@ class ModelStatic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP("result_modelstatic_integral.lp")
         # The problem is solved using PuLP's choice of Solver
-        #self.problem.solve(COIN())
-        self.problem.solve(GLPK())
+        self.problem.solve(GLPK(options=['--mipgap','0.001']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
