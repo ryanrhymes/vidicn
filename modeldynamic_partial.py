@@ -79,7 +79,7 @@ class ModelDynamic(object):
         self.cache = prepare_cachesize()
         self.Y = prepare_content_distrib_var()
         self.X = prepare_decision_var()
-        self.req = (25, 11)
+        self.req = (25,11)
         pass
 
     def solve(self):
@@ -94,11 +94,13 @@ class ModelDynamic(object):
         # Set constraints
         self.set_cache_constraints()
         self.set_ncopy_constraints()
+        self.set_natural_constraints()
 
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp")
         # The problem is solved using PuLP's choice of Solver
-        self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
+        #self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
+        self.problem.solve(GLPK())
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
@@ -107,12 +109,14 @@ class ModelDynamic(object):
 
     def set_objective(self):
         objective = []
+        u, v = self.req
         for i in range(N):
             for j in range(P):
                 tmp1 = self.chunkSize[i,j] * self.chunkPopularity[i,j] * self.filePopularity[i]
                 for k in range(M):
-                    i_j_k = '%i_%i_%i' % (i, j, k)
-                    objective.append(tmp1 * (M - k) * self.x_vars[i_j_k])
+                    if (i == u and j == v) or (self.Y[i,j,k] == 1):
+                        i_j_k = '%i_%i_%i' % (i, j, k)
+                        objective.append(tmp1 * (M - k) * self.x_vars[i_j_k])
         self.problem += lpSum(objective), "Maximize byte hit rate and footprint reduction"
         pass
 
@@ -122,9 +126,9 @@ class ModelDynamic(object):
             for i in range(N):
                 for j in range(P):
                     i_j_k = '%i_%i_%i' % (i, j, k)
-                    constraints.append(self.chunkSize[i,j] * self.x_vars[i_j_k])
-            t, u = self.req
-            constraints.append(self.chunkSize[t,u] * (1 - self.Y[t,u,k]))
+                    constraints.append(self.Y[i,j,k] * self.chunkSize[i,j] * self.x_vars[i_j_k])
+            u, v = self.req
+            constraints.append(self.chunkSize[u,v] * (1 - self.Y[u,v,k]))
             self.problem += lpSum(constraints) <= self.cache[k], ("cache %i capacity constraint" % k)
         pass
 
@@ -136,6 +140,18 @@ class ModelDynamic(object):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     constraints.append(self.x_vars[i_j_k])
                 self.problem += lpSum(constraints) <= K, ("chunk %i_%i KCopy constraint" % (i,j))
+        pass
+
+    def set_natural_constraints(self):
+        constraints = []
+        u, v = self.req
+        for i in range(N):
+            for j in range(P):
+                for k in range(M):
+                    if not ( (i == u and j == v) or (self.Y[i,j,k] == 1) ):
+                        i_j_k = '%i_%i_%i' % (i, j, k)
+                        constraints.append(self.x_vars[i_j_k])
+        self.problem += lpSum(constraints) == 0, "natural constraint"
         pass
 
     def output_result(self):
