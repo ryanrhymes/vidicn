@@ -5,6 +5,8 @@ The VidICN Model Solver
 REMARK:
 1. The unit used in the model is megabyte (MB)
 
+USAGE: app.py request_trace distribution_trace
+
 Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
 2013.01.11
 """
@@ -62,6 +64,32 @@ def prepare_decision_var():
     X = [ "%i_%i_%i" % (i, j, k) for i in range(N) for j in range(P) for k in range(M) ]
     return X
 
+def load_content_distrib_var(ifn):
+    Y = zeros((N, P, M), dtype = int64)
+    for line in open(ifn, 'r').readlines():
+        x, y, z, c = line.strip().split()
+        Y[int(x),int(y),int(z)] = int(c)
+    return Y
+
+def load_request(ifn):
+    request = []
+    for line in open(ifn, 'r').readlines():
+        f, c = line.split()
+        request.append([int(f), int(c)])
+    return array(request)
+
+def start_optimization(reqs, varY):
+    obj = ModelDynamic()
+    obj.init_model(None, varY)
+    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
+    i = 1
+    for req in reqs:
+        obj.reset_model(req, obj.Y)
+        obj.solve()
+        obj.output_result(str(i))
+        i += 1
+    pass
+
 
 # Model Solver
 
@@ -71,15 +99,20 @@ class ModelDynamic(object):
         self.usedtime = time.time()
         pass
 
-    def init_model(self):
+    def init_model(self, req = None, varY = None):
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
         self.chunkPopularity = prepare_chunk_popularity()
         self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
-        self.Y = prepare_content_distrib_var()
         self.X = prepare_decision_var()
-        self.req = (25,11)
+        self.Y = varY
+        self.req = req
+        pass
+
+    def reset_model(self, req, varY):
+        self.req = req
+        self.Y = varY
         pass
 
     def solve(self):
@@ -154,13 +187,23 @@ class ModelDynamic(object):
         self.problem += lpSum(constraints) == 0, "natural constraint"
         pass
 
-    def output_result(self):
+    def output_result(self, ifn):
         # The status of the solution is printed to the screen
         print "Status:", LpStatus[self.problem.status]
         # Each of the variables is printed with it's resolved optimum value
-        f = open(LOG + ".sol", "w")
+        varX = zeros((N, P, M), dtype = int64)
         for v in self.problem.variables():
-            f.write("%s = %.2f\n" % (v.name, v.varValue))
+            _, i, j, k = v.name.split('_')
+            varX[int(i), int(j), int(k)] = int(v.varValue)
+
+        f1 = open(LOG + ".sol." + ifn, "w")
+        f2 = open(LOG + ".dis." + ifn, "w")
+        for i in range(N):
+            for j in range(P):
+                for k in range(M):
+                    self.Y[i,j,k] = varX[i,j,k]
+                    f1.write("x_%i_%i_%i = %i\n" % (i, j, k, varX[i,j,k]))
+                    f2.write("%i %i %i %i\n" % (i, j, k, self.Y[i,j,k]))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
@@ -176,10 +219,7 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    obj = ModelDynamic()
-    obj.init_model()
-    obj.solve()
-    obj.output_result()
-    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
-
+    reqs = load_request(sys.argv[1])[:5:] # Liang: temp code
+    varY = load_content_distrib_var(sys.argv[2])
+    start_optimization(reqs, varY)
     sys.exit(0)
