@@ -17,21 +17,30 @@ N = 100     # Number of files
 P = 100     # Number of chunks in a file
 R = 100000  # Number of requests
 
-
 def request_weibull():
-    """Generate weibull request pattern"""
-    reqFile = sort(random.weibull(0.513, 10*R))[ : R]
-    random.shuffle(reqFile)
-    reqChunk = sort(random.weibull(0.8, 10*R))[0 : R]
-    random.shuffle(reqChunk)
-    return reqFile, reqChunk
+    reqFile = []
+    reqChunk = []
+    shift = 5
+    while(True):
+        x = random.weibull(0.513) * 40
+        if x > shift and x < N+shift:
+            reqFile.append(x-shift)
+        if len(reqFile) >= R:
+            break
+    while(True):
+        x = random.weibull(0.8) * 40
+        if x > shift and x < P+shift:
+            reqChunk.append(x-shift)
+        if len(reqChunk) >= R:
+            break
+    return array(reqFile), array(reqChunk)
 
 def output_request(reqFile, reqChunk):
-    norma = (N - 1) / max(reqFile)
-    normb = (P - 1) / max(reqChunk)
+    norma, normb = 1.0, 1.0
     for i in range(R):
         print (int) (reqFile[i] * norma), (int) (reqChunk[i] * normb)
     pass
+
 
 # Main function
 

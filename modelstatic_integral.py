@@ -20,19 +20,24 @@ from pulp import *
 # Model constants
 
 SEED = 123  # Random seed for the simulation
-M = 5       # Number of routers
+M = 10       # Number of routers
 N = 100     # Number of files
 P = 1       # Number of chunks in a file
 K = 1       # Number of copies on the path
-C = 100     # Cache size
+C = 50      # Cache size
 
 LOG = "result_modelstatic_integral"
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
+def weibull(k, lmd, x):
+    k, lmd, x = (1.0 * k, 1.0 * lmd, 1.0 * x)
+    y = (k/lmd) * (x/lmd)**(k - 1) * exp(-(x/lmd)**k)
+    return y
+
 def prepare_file_popularity():
-    k = 0.513
-    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 100
+    k = 0.513; lmd = 40.0
+    filePopularity = array([ weibull(k, lmd, x) for x in range(10, N+10) ]) * 100
     return filePopularity
 
 def prepare_filesize_distrib():

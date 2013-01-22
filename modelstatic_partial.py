@@ -20,19 +20,24 @@ from pulp import *
 # Model constants
 
 SEED = 123  # Random seed for the simulation
-M = 5       # Number of routers
+M = 10       # Number of routers
 N = 100     # Number of files
 P = 100     # Number of chunks in a file
 K = 1       # Number of copies on the path
-C = 100     # Cache size
+C = 50     # Cache size
 
 LOG = "result_modelstatic_partial"
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
+def weibull(k, lmd, x):
+    k, lmd, x = (1.0 * k, 1.0 * lmd, 1.0 * x)
+    y = (k/lmd) * (x/lmd)**(k - 1) * exp(-(x/lmd)**k)
+    return y
+
 def prepare_file_popularity():
-    k = 0.513
-    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 100
+    k = 0.513; lmd = 40.0
+    filePopularity = array([ weibull(k, lmd, x) for x in range(10, N+10) ]) * 100
     return filePopularity
 
 def prepare_filesize_distrib():
@@ -40,10 +45,14 @@ def prepare_filesize_distrib():
     fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
-def prepare_chunk_popularity():
+def prepare_chunk_popularity_weibull():
+    k = 0.8; lmd = 40.0
+    chunkPopularity = array([ [ weibull(k, lmd, x) for x in range(1,P+1) ] for y in range(N)]) * 100
+    return chunkPopularity
+
+def prepare_chunk_popularity_linear():
     random.seed(SEED + 7)
     chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))]) * 100
-    #chunkPopularity = array([sort(random.weibull(0.8, P))[::-1] for x in range(N)]) * 100
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
@@ -74,7 +83,7 @@ class ModelStatic(object):
     def init_model(self):
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
-        self.chunkPopularity = prepare_chunk_popularity()
+        self.chunkPopularity = prepare_chunk_popularity_weibull()
         self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
         self.Y = prepare_content_distrib_var()
