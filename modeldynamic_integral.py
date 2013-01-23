@@ -28,6 +28,7 @@ P = 1       # Number of chunks in a file
 K = 1       # Number of copies on the path
 C = 100     # Cache size
 
+GAP = 0.01   # MIP gap for the solver
 LOG = "result_modeldynamic_integral"
 TKN = time.strftime("%Y%m%d%H%M%S")
 
@@ -131,8 +132,7 @@ class ModelDynamic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp")
         # The problem is solved using PuLP's choice of Solver
-        #self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
-        self.problem.solve(GLPK())
+        self.problem.solve(GLPK(options=['--mipgap', str(GAP, '--cuts']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)

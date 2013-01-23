@@ -24,18 +24,24 @@ from pulp import *
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
 N = 100     # Number of files
-P = 100     # Number of chunks in a file
+P = 10      # Number of chunks in a file
 K = 1       # Number of copies on the path
-C = 100     # Cache size
+C = 50      # Cache size
 
+GAP = 0.01   # MIP gap for the solver
 LOG = "result_modeldynamic_partial"
 TKN = time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
+def weibull(k, lmd, x):
+    k, lmd, x = (1.0 * k, 1.0 * lmd, 1.0 * x)
+    y = (k/lmd) * (x/lmd)**(k - 1) * exp(-(x/lmd)**k)
+    return y
+
 def prepare_file_popularity():
-    k = 0.513
-    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 100
+    k = 0.513; lmd = 40.0
+    filePopularity = array([ weibull(k, lmd, x) for x in range(10, N+10) ]) * 100
     return filePopularity
 
 def prepare_filesize_distrib():
@@ -44,9 +50,8 @@ def prepare_filesize_distrib():
     return fileSize
 
 def prepare_chunk_popularity():
-    random.seed(SEED + 7)
-    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))]) * 100
-    #chunkPopularity = array([sort(random.weibull(1.0, P))[::-1] for x in range(N)]) * 100
+    k = 0.8; lmd = 40.0
+    chunkPopularity = array([ [ weibull(k, lmd, x) for x in range(1,P+1) ] for y in range(N)]) * 100
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
@@ -133,8 +138,7 @@ class ModelDynamic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp")
         # The problem is solved using PuLP's choice of Solver
-        #self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
-        self.problem.solve(GLPK())
+        self.problem.solve(GLPK(options=['--mipgap', str(GAP), '--cuts']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
@@ -220,7 +224,8 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    reqs = load_request(sys.argv[1])[:1000:] # Liang: temp code
-    varY = load_content_distrib_var(sys.argv[2])
+    reqs = load_request(sys.argv[1]) #[:1000:] # Liang: temp code
+    # varY = load_content_distrib_var(sys.argv[2])
+    varY = prepare_content_distrib_var()
     start_optimization(reqs, varY)
     sys.exit(0)
