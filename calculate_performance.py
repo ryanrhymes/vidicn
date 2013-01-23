@@ -75,7 +75,9 @@ def calculate_performance(request, cache, chunk):
             HR += 1.0
             byteHR += chunk[rf][rc]
             index = where(cache[rf][rct] == 1)[0][0] + 1
-            FP += chunk[rf][rc] * index 
+            FP += chunk[rf][rc] * index
+        else:
+            FP += chunk[rf][rc] * (M+1)
         totalByte += chunk[rf][rc]
     HR /= len(request)
     byteHR /= totalByte

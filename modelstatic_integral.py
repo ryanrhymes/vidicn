@@ -44,7 +44,7 @@ def prepare_file_popularity():
 
 def prepare_filesize_distrib():
     random.seed(SEED + 5)
-    fileSize = random.uniform(size=N) * 10 + 20
+    fileSize = random.uniform(size=N) * 0 + 20
     return fileSize
 
 def prepare_chunk_popularity():

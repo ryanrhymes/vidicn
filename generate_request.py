@@ -23,13 +23,13 @@ def request_weibull():
     shiftF = 10
     shiftC = 1
     while(True):
-        x = random.weibull(0.513) * 40
+        x = random.weibull(0.513) * 20
         if x > shiftF and x < N+shiftF:
             reqFile.append(x-shiftF)
         if len(reqFile) >= R:
             break
     while(True):
-        x = random.weibull(0.8) * 40
+        x = random.weibull(0.8) * 20
         if x > shiftC and x < P+shiftC:
             reqChunk.append(x-shiftC)
         if len(reqChunk) >= R:
