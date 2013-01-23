@@ -20,17 +20,18 @@ R = 100000  # Number of requests
 def request_weibull():
     reqFile = []
     reqChunk = []
-    shift = 5
+    shiftF = 10
+    shiftC = 1
     while(True):
         x = random.weibull(0.513) * 40
-        if x > shift and x < N+shift:
-            reqFile.append(x-shift)
+        if x > shiftF and x < N+shiftF:
+            reqFile.append(x-shiftF)
         if len(reqFile) >= R:
             break
     while(True):
         x = random.weibull(0.8) * 40
-        if x > shift and x < P+shift:
-            reqChunk.append(x-shift)
+        if x > shiftC and x < P+shiftC:
+            reqChunk.append(x-shiftC)
         if len(reqChunk) >= R:
             break
     return array(reqFile), array(reqChunk)

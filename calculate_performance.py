@@ -14,6 +14,10 @@ import sys
 
 from numpy import *
 
+# Model constants
+
+M = 5
+
 
 def load_request(ifn):
     print "load request trace ..."
@@ -49,7 +53,7 @@ def load_chunk(ifn):
     return chunk
 
 def get_model_parameter(lines):
-    files, chunks, routers = (0, 0, 0)
+    files, chunks, routers = (0, 0, 0)variables
     for line in lines:
         _, x, y, z = line.split("=")[0].split("_")
         files = max(files, int(x))
@@ -58,23 +62,24 @@ def get_model_parameter(lines):
     return files, chunks, routers
 
 def calculate_performance(request, cache, chunk, integral=True):
-    print "calculating performance ..."
+    integral = True if cache.shape[1] == 1 else False
+    print "calculating performance ... [%s caching]" % ( "integral" if integral else "partial" )
     HR = 0.0
     byteHR = 0.0
     totalByte = 0.0
     FP = 0.0
     totalFP = 0.0
     for rf, rc in request:
-        rc = 0 if integral else rc
-        if 1 in cache[rf][rc]:
+        rct = 0 if integral else rc
+        if 1 in cache[rf][rct]:
             HR += 1.0
             byteHR += chunk[rf][rc]
-            index = where(cache[rf][rc] == 1)[0][0] + 1
+            index = where(cache[rf][rct] == 1)[0][0] + 1
             FP += chunk[rf][rc] * index 
         totalByte += chunk[rf][rc]
     HR /= len(request)
     byteHR /= totalByte
-    FPR = (totalByte * 6 - FP) / (totalByte * 6)
+    FPR = (totalByte * (M+1) - FP) / (totalByte * (M+1))
     print HR, byteHR, FPR
     pass
 
