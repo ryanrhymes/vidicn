@@ -24,11 +24,11 @@ from pulp import *
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
 N = 100     # Number of files
-P = 100     # Number of chunks in a file
+P = 1       # Number of chunks in a file
 K = 1       # Number of copies on the path
 C = 100     # Cache size
 
-LOG = "result_modeldynamic_partial"
+LOG = "result_modeldynamic_integral"
 TKN = time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
@@ -44,9 +44,7 @@ def prepare_filesize_distrib():
     return fileSize
 
 def prepare_chunk_popularity():
-    random.seed(SEED + 7)
-    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))]) * 100
-    #chunkPopularity = array([sort(random.weibull(1.0, P))[::-1] for x in range(N)]) * 100
+    chunkPopularity = ones([N, P])
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
