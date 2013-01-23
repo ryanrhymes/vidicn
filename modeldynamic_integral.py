@@ -67,14 +67,14 @@ def load_content_distrib_var(ifn):
     Y = zeros((N, P, M), dtype = int64)
     for line in open(ifn, 'r').readlines():
         x, y, z, c = line.strip().split()
-        Y[int(x),int(y),int(z)] = int(c)
+        Y[int(x),0,int(z)] = int(c)
     return Y
 
 def load_request(ifn):
     request = []
     for line in open(ifn, 'r').readlines():
         f, c = line.split()
-        request.append([int(f), int(c)])
+        request.append([int(f), 0])
     return array(request)
 
 def start_optimization(reqs, varY):
@@ -83,7 +83,6 @@ def start_optimization(reqs, varY):
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
     i = 1
     for req in reqs:
-        req = (req[0], 0)
         obj.reset_model(req, obj.Y)
         obj.solve()
         obj.output_result(str(i))
