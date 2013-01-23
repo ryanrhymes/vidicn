@@ -22,13 +22,13 @@ from pulp import *
 SEED = 123   # Random seed for the simulation
 M = 5        # Number of routers
 N = 100      # Number of files
-P = 200       # Number of chunks in a file
+P = 10       # Number of chunks in a file
 K = 1        # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "result_modelstatic_partial"
-TKN = str(P) # time.strftime("%Y%m%d%H%M%S")
+TKN = time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
@@ -152,7 +152,8 @@ class ModelStatic(object):
         # Each of the variables is printed with it's resolved optimum value
         f = open(LOG + ".sol." + TKN, "w")
         for v in self.problem.variables():
-            f.write("%s = %.2f\n" % (v.name, v.varValue))
+            _, i, j, k = v.name.split('_')
+            f.write("%i %i %i %i\n" % (int(i), int(j), int(k), int(v.varValue)))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):

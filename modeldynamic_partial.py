@@ -203,7 +203,7 @@ class ModelDynamic(object):
             for j in range(P):
                 for k in range(M):
                     self.Y[i,j,k] = varX[i,j,k]
-                    f1.write("x_%i_%i_%i = %i\n" % (i, j, k, varX[i,j,k]))
+                    f1.write("%i %i %i %i\n" % (i, j, k, varX[i,j,k]))
                     f2.write("%i %i %i %i\n" % (i, j, k, self.Y[i,j,k]))
         pass
 

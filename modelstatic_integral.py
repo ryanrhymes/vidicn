@@ -143,7 +143,8 @@ class ModelStatic(object):
         # Each of the variables is printed with it's resolved optimum value
         f = open(LOG + ".sol." + TKN, "w")
         for v in self.problem.variables():
-            f.write("%s = %.2f\n" % (v.name, v.varValue))
+            _, i, j, k = v.name.split('_')
+            f.write("%i %i %i %i\n" % (int(i), int(j), int(k), int(v.varValue)))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
