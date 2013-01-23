@@ -83,6 +83,7 @@ def start_optimization(reqs, varY):
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
     i = 1
     for req in reqs:
+        req = (req[0], 0)
         obj.reset_model(req, obj.Y)
         obj.solve()
         obj.output_result(str(i))
@@ -218,7 +219,7 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    reqs = load_request(sys.argv[1])[:1000:] # Liang: temp code
+    reqs = load_request(sys.argv[1])[:10:] # Liang: temp code
     varY = load_content_distrib_var(sys.argv[2])
     start_optimization(reqs, varY)
     sys.exit(0)
