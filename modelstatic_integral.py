@@ -27,6 +27,7 @@ K = 1       # Number of copies on the path
 C = 50      # Cache size
 
 LOG = "result_modelstatic_integral"
+TKN = time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
@@ -98,12 +99,9 @@ class ModelStatic(object):
         self.set_ncopy_constraints()
 
         # The problem data is written to an .lp file
-        self.problem.writeLP(LOG + ".lp")
+        self.problem.writeLP(LOG + ".lp." + TKN)
         # The problem is solved using PuLP's choice of Solver
         self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
-
-        self.usedtime = time.time() - self.usedtime
-        print "Time overheads: %.3f s" % (self.usedtime)
 
         pass
 
@@ -142,13 +140,13 @@ class ModelStatic(object):
         # The status of the solution is printed to the screen
         print "Status:", LpStatus[self.problem.status]
         # Each of the variables is printed with it's resolved optimum value
-        f = open(LOG + ".sol", "w")
+        f = open(LOG + ".sol." + TKN, "w")
         for v in self.problem.variables():
             f.write("%s = %.2f\n" % (v.name, v.varValue))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
-        f = open(LOG + ".chunk", "w")
+        f = open(LOG + ".chunk." + TKN, "w")
         for i in range(N):
             for j in range(P):
                 f.write("%i %i %f %f\n" % (i, j, chunkSize[i][j], chunkPopularity[i][j]))

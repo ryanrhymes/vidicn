@@ -29,6 +29,7 @@ K = 1       # Number of copies on the path
 C = 100     # Cache size
 
 LOG = "result_modeldynamic_partial"
+TKN = time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
