@@ -13,8 +13,8 @@ from numpy import *
 # Model constants
 
 SEED = 555  # Random seed for the simulation
-N = 1000     # Number of files
-P = 10     # Number of chunks in a file
+N = 100     # Number of files
+P = 10      # Number of chunks in a file
 R = 100000  # Number of requests
 
 def request_weibull():

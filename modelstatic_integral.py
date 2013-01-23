@@ -21,7 +21,7 @@ from pulp import *
 
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
-N = 1000    # Number of files
+N = 100     # Number of files
 P = 1       # Number of chunks in a file
 K = 1       # Number of copies on the path
 C = 50      # Cache size

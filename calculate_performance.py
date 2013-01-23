@@ -53,7 +53,7 @@ def load_chunk(ifn):
     return chunk
 
 def get_model_parameter(lines):
-    files, chunks, routers = (0, 0, 0)variables
+    files, chunks, routers = (0, 0, 0)
     for line in lines:
         _, x, y, z = line.split("=")[0].split("_")
         files = max(files, int(x))
