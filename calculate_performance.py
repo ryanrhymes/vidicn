@@ -61,7 +61,7 @@ def get_model_parameter(lines):
         routers = max(routers, int(z))
     return files, chunks, routers
 
-def calculate_performance(request, cache, chunk, integral=True):
+def calculate_performance(request, cache, chunk):
     integral = True if cache.shape[1] == 1 else False
     print "calculating performance ... [%s caching]" % ( "integral" if integral else "partial" )
     HR = 0.0

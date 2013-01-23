@@ -21,11 +21,12 @@ from pulp import *
 
 SEED = 123   # Random seed for the simulation
 M = 5        # Number of routers
-N = 100      # Number of files
-P = 100      # Number of chunks in a file
+N = 1000     # Number of files
+P = 10       # Number of chunks in a file
 K = 1        # Number of copies on the path
 C = 50       # Cache size
 
+GAP = 0.01   # MIP gap for the solver
 LOG = "result_modelstatic_partial"
 TKN = time.strftime("%Y%m%d%H%M%S")
 
@@ -107,7 +108,7 @@ class ModelStatic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp." + TKN)
         # The problem is solved using PuLP's choice of Solver
-        self.problem.solve(GLPK(options=['--mipgap','0.01', '--cuts']))
+        self.problem.solve(GLPK(options=['--mipgap',str(GAP), '--cuts']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
