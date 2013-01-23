@@ -33,9 +33,8 @@ def load_cache(ifn):
     files, chunks, routers = get_model_parameter(lines)
     cache = zeros((files+1, chunks+1, routers+1))
     for line in lines:
-        _, x, y, z = line.split("=")[0].split("_")
-        cached = line.split("=")[1].strip()
-        cache[int(x)][int(y)][int(z)] = cached
+        x, y, z, c = line.strip().split()
+        cache[int(x)][int(y)][int(z)] = c
     return cache
 
 def load_chunk(ifn):
@@ -55,7 +54,7 @@ def load_chunk(ifn):
 def get_model_parameter(lines):
     files, chunks, routers = (0, 0, 0)
     for line in lines:
-        _, x, y, z = line.split("=")[0].split("_")
+        x, y, z, c = line.strip().split()
         files = max(files, int(x))
         chunks = max(chunks, int(y))
         routers = max(routers, int(z))

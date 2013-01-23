@@ -14,7 +14,7 @@ from numpy import *
 
 SEED = 555  # Random seed for the simulation
 N = 100     # Number of files
-P = 200      # Number of chunks in a file
+P = 100     # Number of chunks in a file
 R = 100000  # Number of requests
 
 def request_weibull():
