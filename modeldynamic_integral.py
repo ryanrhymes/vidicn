@@ -160,7 +160,8 @@ class ModelDynamic(object):
                     i_j_k = '%i_%i_%i' % (i, j, k)
                     constraints.append(self.Y[i,j,k] * self.chunkSize[i,j] * self.x_vars[i_j_k])
             u, v = self.req
-            constraints.append(self.chunkSize[u,v] * (1 - self.Y[u,v,k]))
+            u_v_k = '%i_%i_%i' % (u, v, k)
+            constraints.append(self.chunkSize[u,v] * self.x_vars[u_v_k] * (1 - self.Y[u,v,k]))
             self.problem += lpSum(constraints) <= self.cache[k], ("cache %i capacity constraint" % k)
         pass
 
