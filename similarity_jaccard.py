@@ -3,7 +3,7 @@
 Given the content distribution file and request trace, calculate
 the hit rate and footprint reduction.
 
-Usage: app.py cache_trace_1 cache_trace_2 chunk_trace
+Usage: app.py cache_trace_1 cache_trace_2 chunk_trace file_trace
 
 Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
 2013.01.24
@@ -27,7 +27,7 @@ def similarity_cache(n1, n2):
     r /= len(s1.keys())
     return r
 
-def similarity_cache_pw(n1, n2, info):
+def similarity_cache_pw(n1, n2, cinfo, finfo):
     r = 0.0
     s1 = convert2set_cs(n1)
     s2 = convert2set_cs(n2)
@@ -37,9 +37,9 @@ def similarity_cache_pw(n1, n2, info):
         tw = 0.0
         cw = 0.0
         for x, y in (ts1 | ts2):
-            tw += info[x,y]
+            tw += cinfo[x,y][1] * finfo[x][1]
         for x, y in (ts1 & ts2):
-            cw += info[x,y]
+            cw += cinfo[x,y][1] * finfo[x][1]
         r += cw / tw
     r /= len(s1.keys())
     return r
@@ -50,27 +50,26 @@ def similarity_network(n1, n2):
     r = 1.0 * len(s1 & s2) / len(s1 | s2)
     return r
 
-def similarity_network_pw(n1, n2, info):
+def similarity_network_pw(n1, n2, cinfo, finfo):
     s1 = convert2set_nt(n1)
     s2 = convert2set_nt(n2)
     tw = 0.0
     cw = 0.0
     for x, y in (s1 | s2):
-        tw += info[x,y]
+        tw += cinfo[x,y][1] * finfo[x][1]
     for x, y in (s1 & s2):
-        cw += info[x,y]
+        cw += cinfo[x,y][1] * finfo[x][1]
     return cw / tw
 
-def entropy_network(n1, n2, info):
+def entropy_network(n1, n2, cinfo, finfo):
     s1 = convert2set_nt(n1)
     s2 = convert2set_nt(n2)
     e1 = 0.0
     e2 = 0.0
-    nm = info.max()
     for x, y in s1:
-        e1 -= log2(info[x,y])
+        e1 -= log2(cinfo[x,y][1] * finfo[x][1] / 100)
     for x, y in s2:
-        e2 -= log2(info[x,y])
+        e2 -= log2(cinfo[x,y][1] * finfo[x][1] / 100)
     r = min(e1, e2) / max(e1, e2)
     print e1, e2
     return r
@@ -103,13 +102,14 @@ def convert2set_cs(cache):
 if __name__ == "__main__":
     caches1 = load_cache(sys.argv[1])
     caches2 = load_cache(sys.argv[2])
-    cinfo = load_chunk(sys.argv[3])
+    cinfo = load_chunk_info(sys.argv[3])
+    finfo = load_file_info(sys.argv[4])
 
     cs = similarity_cache(caches1, caches2)
-    cw = similarity_cache_pw(caches1, caches2, cinfo)
+    cw = similarity_cache_pw(caches1, caches2, cinfo, finfo)
     ns = similarity_network(caches1, caches2)
-    nw = similarity_network_pw(caches1, caches2, cinfo)
-    en = entropy_network(caches1, caches2, cinfo)
+    nw = similarity_network_pw(caches1, caches2, cinfo, finfo)
+    en = entropy_network(caches1, caches2, cinfo, finfo)
     print cs, cw, ns, nw, en
 
     sys.exit(0)

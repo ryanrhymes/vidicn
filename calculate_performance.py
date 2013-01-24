@@ -37,19 +37,32 @@ def load_cache(ifn):
         cache[int(x)][int(y)][int(z)] = c
     return cache
 
-def load_chunk(ifn):
+def load_chunk_info(ifn):
     print "load chunk info ...", ifn
     lines = open(ifn, 'r').readlines()
     files, chunks = (0, 0)
     for line in lines:
-        x, y, s, t = line.split()
+        x, y, s, t = line.strip().split()
         files = max(files, int(x))
         chunks = max(chunks, int(y))
-    chunk = zeros((files + 1, chunks + 1))
+    chunk = zeros((files + 1, chunks + 1, 2))
     for line in lines:
-        x, y, s, t = line.split()
-        chunk[int(x)][int(y)] = float(s)
+        x, y, s, t = line.strip().split()
+        chunk[int(x)][int(y)] = (float(s), float(t))
     return chunk
+
+def load_file_info(ifn):
+    print "load file info ...", ifn
+    lines = open(ifn, 'r').readlines()
+    files = 0
+    for line in lines:
+        x, y, z = line.strip().split()
+        files = max(files, int(x))
+    fa = zeros((files + 1, 2))
+    for line in lines:
+        x, y, z = line.strip().split()
+        fa[int(x)] = (float(y), float(z))
+    return fa
 
 def get_model_parameter(lines):
     files, chunks, routers = (0, 0, 0)
@@ -72,12 +85,12 @@ def calculate_performance(request, cache, chunk):
         rct = 0 if integral else rc
         if 1 in cache[rf][rct]:
             HR += 1.0
-            byteHR += chunk[rf][rc]
+            byteHR += chunk[rf][rc][0]
             index = where(cache[rf][rct] == 1)[0][0] + 1
-            FP += chunk[rf][rc] * index
+            FP += chunk[rf][rc][0] * index
         else:
-            FP += chunk[rf][rc] * (M+1)
-        totalByte += chunk[rf][rc]
+            FP += chunk[rf][rc][0] * (M+1)
+        totalByte += chunk[rf][rc][0]
     HR /= len(request)
     byteHR /= totalByte
     FPR = (totalByte * (M+1) - FP) / (totalByte * (M+1))
@@ -90,7 +103,7 @@ def calculate_performance(request, cache, chunk):
 if __name__ == "__main__":
     request = load_request(sys.argv[1])
     cache = load_cache(sys.argv[2])
-    chunk = load_chunk(sys.argv[3])
+    chunk = load_chunk_info(sys.argv[3])
     calculate_performance(request, cache, chunk)
 
     sys.exit(0)

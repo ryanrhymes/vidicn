@@ -163,6 +163,12 @@ class ModelStatic(object):
                 f.write("%i %i %f %f\n" % (i, j, chunkSize[i][j], chunkPopularity[i][j]))
         pass
 
+    def output_file_info(self, fileSize, filePopularity):
+        f = open(LOG + ".file." + TKN, "w")
+        for i in range(N):
+            f.write("%i %f %f\n" % (i, fileSize[i], filePopularity[i]))
+        pass
+
     pass
 
 
@@ -172,6 +178,7 @@ if __name__ == "__main__":
     obj = ModelStatic()
     obj.init_model()
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
+    obj.output_file_info(obj.fileSize, obj.filePopularity)
     obj.solve()
     obj.output_result()
 
