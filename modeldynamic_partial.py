@@ -138,8 +138,8 @@ class ModelDynamic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp")
         # The problem is solved using PuLP's choice of Solver
-        #self.problem.solve(GLPK(options=['--mipgap', str(GAP), '--cuts']))
-        self.problem.solve(GLPK())
+        self.problem.solve(GLPK(options=['--mipgap', str(GAP), '--cuts']))
+        #self.problem.solve(GLPK())
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
@@ -227,7 +227,7 @@ class ModelDynamic(object):
 
 if __name__ == "__main__":
     reqs = load_request(sys.argv[1]) #[:1000:] # Liang: temp code
-    varY = load_content_distrib_var(sys.argv[2])
-    #varY = prepare_content_distrib_var()
+    #varY = load_content_distrib_var(sys.argv[2])
+    varY = prepare_content_distrib_var()
     start_optimization(reqs, varY)
     sys.exit(0)
