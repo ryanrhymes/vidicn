@@ -20,7 +20,7 @@ M = 5
 
 
 def load_request(ifn):
-    print "load request trace ..."
+    print "load request trace ...", ifn
     request = []
     for line in open(ifn, 'r').readlines():
         f, c = line.split()
@@ -28,7 +28,7 @@ def load_request(ifn):
     return array(request)
 
 def load_cache(ifn):
-    print "load cache trace ..."
+    print "load cache trace ...", ifn
     lines = open(ifn, 'r').readlines()
     files, chunks, routers = get_model_parameter(lines)
     cache = zeros((files+1, chunks+1, routers+1))
@@ -38,7 +38,7 @@ def load_cache(ifn):
     return cache
 
 def load_chunk(ifn):
-    print "load chunk info ..."
+    print "load chunk info ...", ifn
     lines = open(ifn, 'r').readlines()
     files, chunks = (0, 0)
     for line in lines:
