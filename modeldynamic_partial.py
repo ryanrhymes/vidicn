@@ -226,7 +226,7 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    reqs = load_request(sys.argv[1]) #[:1000:] # Liang: temp code
+    reqs = load_request(sys.argv[1])[:2000:]
     #varY = load_content_distrib_var(sys.argv[2])
     varY = prepare_content_distrib_var()
     start_optimization(reqs, varY)
