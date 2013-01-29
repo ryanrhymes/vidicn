@@ -94,8 +94,20 @@ def calculate_performance(request, cache, chunk):
     HR /= len(request)
     byteHR /= totalByte
     FPR = (totalByte * (M+1) - FP) / (totalByte * (M+1))
-    print HR, byteHR, FPR
-    pass
+    return HR, byteHR, FPR
+
+def calculate_document_download_effort(cache):
+    dEffort = 0.0
+    N, P, M = cache.shape
+    for i in range(N):
+        tde = 0.0
+        for j in range(P):
+            tarr = where(cache[i][j] == 1)[0]
+            index = M + 1 if len(tarr) == 0 else tarr[0]
+            tde += index
+        dEffort += tde / ((M + 1) * P)
+    dEffort /= N
+    return dEffort
 
 
 # Main function
@@ -103,7 +115,9 @@ def calculate_performance(request, cache, chunk):
 if __name__ == "__main__":
     request = load_request(sys.argv[1])
     cache = load_cache(sys.argv[2])
-    chunk = load_chunk_info(sys.argv[3])
-    calculate_performance(request, cache, chunk)
+    chunk = load_chunk(sys.argv[3])
+    HR, byteHR, FPR = calculate_performance(request, cache, chunk)
+    dEffort = calculate_document_download_effort(cache)
+    print HR, byteHR, FPR, dEffort
 
     sys.exit(0)
