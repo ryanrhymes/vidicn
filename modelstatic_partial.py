@@ -22,7 +22,7 @@ from pulp import *
 SEED = 123   # Random seed for the simulation
 M = 5        # Number of routers
 N = 100      # Number of files
-P = 10       # Number of chunks in a file
+P = 14       # Number of chunks in a file
 K = 1        # Number of copies on the path
 C = 50       # Cache size
 
@@ -48,8 +48,8 @@ def prepare_filesize_distrib():
     return fileSize
 
 def prepare_chunk_popularity_weibull():
-    k = 0.8; lmd = 40.0
-    chunkPopularity = array([ [ weibull(k, lmd, x) for x in range(1,P+1) ] for y in range(N)]) * 100
+    k = 0.5; lmd = 40.0;
+    chunkPopularity = array([ [ weibull(k, lmd, 1+99.0*x/(P-1)) for x in range(P) ] for y in range(N)]) * 100
     return chunkPopularity
 
 def prepare_chunk_popularity_linear():

@@ -29,15 +29,15 @@ def request_weibull():
         if len(reqFile) >= R:
             break
     while(True):
-        x = random.weibull(0.8) * 40
-        if x > shiftC and x < P+shiftC:
+        x = random.weibull(0.5) * 40
+        if x > 1.0 and x < 100.0:
             reqChunk.append(x-shiftC)
         if len(reqChunk) >= R:
             break
     return array(reqFile), array(reqChunk)
 
 def output_request(reqFile, reqChunk):
-    norma, normb = 1.0, 1.0
+    norma, normb = 1.0, P/99.0
     for i in range(R):
         print (int) (reqFile[i] * norma), (int) (reqChunk[i] * normb)
     pass
@@ -46,6 +46,7 @@ def output_request(reqFile, reqChunk):
 # Main function
 
 if __name__ == "__main__":
+    P = int(sys.argv[1])
     random.seed(SEED)
     rf, rc = request_weibull()
     output_request(rf, rc)
