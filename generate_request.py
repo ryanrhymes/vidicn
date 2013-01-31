@@ -21,7 +21,7 @@ def request_weibull():
     reqFile = []
     reqChunk = []
     shiftF = 10
-    shiftC = 1
+    shiftC = 1.0
     while(True):
         x = random.weibull(0.513) * 40
         if x > shiftF and x < N+shiftF:
@@ -29,15 +29,15 @@ def request_weibull():
         if len(reqFile) >= R:
             break
     while(True):
-        x = random.weibull(0.5) * 40
-        if x > 1.0 and x < 100.0:
+        x = random.weibull(1.0) * 40
+        if x > shiftC and x < shiftC + 100.0:
             reqChunk.append(x-shiftC)
         if len(reqChunk) >= R:
             break
     return array(reqFile), array(reqChunk)
 
 def output_request(reqFile, reqChunk):
-    norma, normb = 1.0, P/99.0
+    norma, normb = 1.0, P/100.0
     for i in range(R):
         print (int) (reqFile[i] * norma), (int) (reqChunk[i] * normb)
     pass
