@@ -113,7 +113,7 @@ class ModelDynamic(object):
     def init_model(self, req = None, varY = None):
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
-        self.chunkPopularity = prepare_chunk_popularity()
+        self.chunkPopularity = prepare_chunk_popularity_weibull()
         self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
         self.X = prepare_decision_var()
@@ -231,7 +231,7 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    reqs = load_request(sys.argv[1]) #[:1000:] # Liang: temp code
+    reqs = load_request(sys.argv[1]) #[:20000:] # Liang: temp code
     #varY = load_content_distrib_var(sys.argv[2])
     varY = prepare_content_distrib_var()
     start_optimization(reqs, varY)
