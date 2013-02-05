@@ -49,9 +49,14 @@ def prepare_filesize_distrib():
     fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
-def prepare_chunk_popularity():
-    k = 0.8; lmd = 40.0
-    chunkPopularity = array([ [ weibull(k, lmd, x) for x in range(1,P+1) ] for y in range(N)]) * 100
+def prepare_chunk_popularity_weibull():
+    k = 0.5; lmd = 1.0;
+    chunkPopularity = array([ [ weibull(k, lmd, 0.1+1.0*x/(P-1)) for x in range(P) ] for y in range(N)]) * 100
+    return chunkPopularity
+
+def prepare_chunk_popularity_linear():
+    random.seed(SEED + 7)
+    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))]) * 100
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
