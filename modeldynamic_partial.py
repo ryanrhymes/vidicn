@@ -24,7 +24,7 @@ from pulp import *
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
 N = 100     # Number of files
-P = 10      # Number of chunks in a file
+P = 4      # Number of chunks in a file
 K = 1       # Number of copies on the path
 C = 50      # Cache size
 
@@ -231,6 +231,7 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
+    P = int(sys.argv[2])
     reqs = load_request(sys.argv[1]) #[:20000:] # Liang: temp code
     #varY = load_content_distrib_var(sys.argv[2])
     varY = prepare_content_distrib_var()
