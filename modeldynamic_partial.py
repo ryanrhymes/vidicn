@@ -24,7 +24,7 @@ from pulp import *
 SEED = 123  # Random seed for the simulation
 M = 5       # Number of routers
 N = 100     # Number of files
-P = 10      # Number of chunks in a file
+P = 4      # Number of chunks in a file
 K = 1       # Number of copies on the path
 C = 50      # Cache size
 
@@ -49,9 +49,14 @@ def prepare_filesize_distrib():
     fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
-def prepare_chunk_popularity():
-    k = 0.8; lmd = 40.0
-    chunkPopularity = array([ [ weibull(k, lmd, x) for x in range(1,P+1) ] for y in range(N)]) * 100
+def prepare_chunk_popularity_weibull():
+    k = 0.5; lmd = 1.0;
+    chunkPopularity = array([ [ weibull(k, lmd, 0.1+1.0*x/(P-1)) for x in range(P) ] for y in range(N)]) * 100
+    return chunkPopularity
+
+def prepare_chunk_popularity_linear():
+    random.seed(SEED + 7)
+    chunkPopularity = array([sort(x)[::-1] for x in random.uniform(size=(N, P))]) * 100
     return chunkPopularity
 
 def prepare_chunksize_distrib(fileSize):
@@ -108,7 +113,7 @@ class ModelDynamic(object):
     def init_model(self, req = None, varY = None):
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
-        self.chunkPopularity = prepare_chunk_popularity()
+        self.chunkPopularity = prepare_chunk_popularity_weibull()
         self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
         self.X = prepare_decision_var()
@@ -226,7 +231,8 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    reqs = load_request(sys.argv[1])[:2000:]
+    P = int(sys.argv[2])
+    reqs = load_request(sys.argv[1]) #[:20000:] # Liang: temp code
     #varY = load_content_distrib_var(sys.argv[2])
     varY = prepare_content_distrib_var()
     start_optimization(reqs, varY)

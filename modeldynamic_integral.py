@@ -26,7 +26,7 @@ M = 5       # Number of routers
 N = 100     # Number of files
 P = 1       # Number of chunks in a file
 K = 1       # Number of copies on the path
-C = 100     # Cache size
+C = 50      # Cache size
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "result_modeldynamic_integral"
@@ -34,9 +34,14 @@ TKN = time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
+def weibull(k, lmd, x):
+    k, lmd, x = (1.0 * k, 1.0 * lmd, 1.0 * x)
+    y = (k/lmd) * (x/lmd)**(k - 1) * exp(-(x/lmd)**k)
+    return y
+
 def prepare_file_popularity():
-    k = 0.513
-    filePopularity = array([ k * x**(k - 1) * exp(-x**k) for x in range(50, N+50) ]) * 100
+    k = 0.513; lmd = 40.0
+    filePopularity = array([ weibull(k, lmd, x) for x in range(10, N+10) ]) * 100
     return filePopularity
 
 def prepare_filesize_distrib():
@@ -132,7 +137,7 @@ class ModelDynamic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp")
         # The problem is solved using PuLP's choice of Solver
-        self.problem.solve(GLPK(options=['--mipgap', str(GAP, '--cuts']))
+        self.problem.solve(GLPK(options=['--mipgap', str(GAP), '--cuts']))
 
         self.usedtime = time.time() - self.usedtime
         print "Time overheads: %.3f s" % (self.usedtime)
@@ -219,7 +224,7 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    reqs = load_request(sys.argv[1])[:10:] # Liang: temp code
+    reqs = load_request(sys.argv[1])[:20000:] # Liang: temp code
     varY = load_content_distrib_var(sys.argv[2])
     start_optimization(reqs, varY)
     sys.exit(0)
