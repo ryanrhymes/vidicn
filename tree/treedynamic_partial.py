@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-The VidICN Model Solver
+The VidICN Model Solver for tree topology
 
 REMARK:
 1. The unit used in the model is megabyte (MB)
@@ -8,7 +8,7 @@ REMARK:
 USAGE: app.py request_trace distribution_trace
 
 Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
-2013.01.11
+2013.02.08
 """
 
 import os
