@@ -6,28 +6,29 @@ REMARK:
 1. The unit used in the model is megabyte (MB)
 
 Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
-2013.01.11
+2013.02.09
 """
 
 import os
 import sys
 import time
+import networkx as nx
 
 from numpy import *
 from pulp import *
 
-
 # Model constants
 
 SEED = 123   # Random seed for the simulation
-M = 5        # Number of routers
+M = None     # Number of routers
+L = None     # Number of leaves
 N = 100      # Number of files
-P = 18       # Number of chunks in a file
+P = 8        # Number of chunks in a file
 K = 1        # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
-LOG = "result_modelstatic_partial"
+LOG = "tree_modelstatic_partial"
 TKN = str(P) # time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
@@ -70,9 +71,18 @@ def prepare_content_distrib_var():
     return Y
 
 def prepare_decision_var():
-    X = [ "%i_%i_%i" % (i, j, k) for i in range(N) for j in range(P) for k in range(M) ]
+    X = [ "%i_%i_%i_%i" % (i, j, k, l) for i in range(N) for j in range(P) for k in range(M) for l in range(M) ]
     return X
 
+def construct_topology():
+    edgelist = [(0,1), (1,2), (1,3), (2,4), (2,5), (3,6), (3,7)]
+    G = nx.Graph(edgelist)
+    return G
+
+def cost_func(G, x, y):
+    c = len(nx.shortest_path(G, 3, 2))
+    c = 1 if x==y else c
+    return c
 
 # Model Solver
 
@@ -83,6 +93,11 @@ class ModelStatic(object):
         pass
 
     def init_model(self):
+        global M, L
+        self.topology = construct_topology()
+        deg = math.log(len(self.topology.nodes()), 2)
+        L = range(int(2**(deg-1)), int(2**deg))
+        M = len(self.topology.nodes())
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
         self.chunkPopularity = prepare_chunk_popularity_weibull()
@@ -104,6 +119,8 @@ class ModelStatic(object):
         # Set constraints
         self.set_cache_constraints()
         self.set_ncopy_constraints()
+        self.set_server_constraints()
+        self.set_natural_constraints()
 
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp." + TKN)
@@ -120,19 +137,20 @@ class ModelStatic(object):
         for i in range(N):
             for j in range(P):
                 tmp1 = self.chunkSize[i,j] * self.chunkPopularity[i,j] * self.filePopularity[i]
-                for k in range(M):
-                    i_j_k = '%i_%i_%i' % (i, j, k)
-                    objective.append(tmp1 * (M - k) * self.x_vars[i_j_k])
+                for k in L:
+                    for l in range(M):
+                        i_j_k_l = '%i_%i_%i_%i' % (i, j, k, l)
+                        objective.append(tmp1 * cost_func(self.topology, k, l) * self.x_vars[i_j_k_l])
         self.problem += lpSum(objective), "Maximize byte hit rate and footprint reduction"
         pass
 
     def set_cache_constraints(self):
-        for k in range(M):
+        for k in range(1, M):
             constraints = []
             for i in range(N):
                 for j in range(P):
-                    i_j_k = '%i_%i_%i' % (i, j, k)
-                    constraints.append(self.chunkSize[i,j] * self.x_vars[i_j_k])
+                    i_j_k_k = '%i_%i_%i_%i' % (i, j, k, k)
+                    constraints.append(self.chunkSize[i,j] * self.x_vars[i_j_k_k])
             self.problem += lpSum(constraints) <= self.cache[k], ("cache %i capacity constraint" % k)
         pass
 
@@ -140,10 +158,28 @@ class ModelStatic(object):
         for i in range(N):
             for j in range(P):
                 constraints = []
-                for k in range(M):
-                    i_j_k = '%i_%i_%i' % (i, j, k)
-                    constraints.append(self.x_vars[i_j_k])
+                for k in range(1, M):
+                    i_j_k_k = '%i_%i_%i_%i' % (i, j, k, k)
+                    constraints.append(self.x_vars[i_j_k_k])
                 self.problem += lpSum(constraints) <= K, ("chunk %i_%i KCopy constraint" % (i,j))
+        pass
+
+    def set_server_constraints(self):
+        constraints = []
+        for i in range(N):
+            for j in range(P):
+                i_j_0_0 = '%i_%i_0_0' % (i, j)
+                self.problem += self.x_vars[i_j_0_0] == 1, ("server constraint %i_%i" % (i,j))
+        pass
+
+    def set_natural_constraints(self):
+        for i in range(N):
+            for j in range(P):
+                for k in range(M):
+                    for l in range(M):
+                        i_j_k_l = '%i_%i_%i_%i' % (i, j, k, l)
+                        i_j_l_l = '%i_%i_%i_%i' % (i, j, l, l)
+                        self.problem += self.x_vars[i_j_k_l] <= self.x_vars[i_j_l_l], ("natural constraint %i_%i_%i_%i" % (i,j,k,l))
         pass
 
     def output_result(self):
@@ -152,8 +188,8 @@ class ModelStatic(object):
         # Each of the variables is printed with it's resolved optimum value
         f = open(LOG + ".sol." + TKN, "w")
         for v in self.problem.variables():
-            _, i, j, k = v.name.split('_')
-            f.write("%i %i %i %i\n" % (int(i), int(j), int(k), int(v.varValue)))
+            _, i, j, k, l = v.name.split('_')
+            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(v.varValue)))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
