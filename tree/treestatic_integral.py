@@ -22,14 +22,14 @@ from pulp import *
 SEED = 123   # Random seed for the simulation
 M = None     # Number of routers
 L = None     # Number of leaves
-N = 100      # Number of files
+N = 1      # Number of files
 P = 1        # Number of chunks in a file
 K = 1        # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "tree_modelstatic_integral"
-TKN = str(P) # time.strftime("%Y%m%d%H%M%S")
+TKN = "" #time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
@@ -84,8 +84,8 @@ def construct_topology():
     return G
 
 def cost_func(G, x, y):
-    c = len(nx.shortest_path(G, 3, 2))
-    c = 1 if x==y else c
+    c = len(nx.shortest_path(G, x, y))
+    c = c+100 if x*y == 0 else c
     return c
 
 # Model Solver
@@ -93,7 +93,6 @@ def cost_func(G, x, y):
 class ModelStatic(object):
     """The vidicn LP solver"""
     def __init__(self):
-        self.usedtime = time.time()
         pass
 
     def init_model(self):
@@ -113,7 +112,7 @@ class ModelStatic(object):
 
     def solve(self):
         # Create the 'prob' variable to contain the problem data
-        self.problem = LpProblem("The vidicn LP Problem", LpMaximize)
+        self.problem = LpProblem("The vidicn LP Problem", LpMinimize)
         self.x_vars = LpVariable.dicts('x', self.X, lowBound = 0, upBound = 1, cat = LpInteger)
 
         # Set objective, first function added to the prob
@@ -124,15 +123,13 @@ class ModelStatic(object):
         self.set_cache_constraints()
         self.set_ncopy_constraints()
         self.set_server_constraints()
-        self.set_natural_constraints()
+        self.set_natural_constraints_1()
+        self.set_natural_constraints_2()
 
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp." + TKN)
         # The problem is solved using PuLP's choice of Solver
         self.problem.solve(GLPK(options=['--mipgap',str(GAP), '--cuts']))
-
-        self.usedtime = time.time() - self.usedtime
-        print "Time overheads: %.3f s" % (self.usedtime)
 
         pass
 
@@ -176,14 +173,25 @@ class ModelStatic(object):
                 self.problem += self.x_vars[i_j_0_0] == 1, ("server constraint %i_%i" % (i,j))
         pass
 
-    def set_natural_constraints(self):
+    def set_natural_constraints_1(self):
         for i in range(N):
             for j in range(P):
                 for k in range(M):
                     for l in range(M):
                         i_j_k_l = '%i_%i_%i_%i' % (i, j, k, l)
                         i_j_l_l = '%i_%i_%i_%i' % (i, j, l, l)
-                        self.problem += self.x_vars[i_j_k_l] <= self.x_vars[i_j_l_l], ("natural constraint %i_%i_%i_%i" % (i,j,k,l))
+                        self.problem += self.x_vars[i_j_k_l] <= self.x_vars[i_j_l_l], ("natural constraint 1 %i_%i_%i_%i" % (i,j,k,l))
+        pass
+
+    def set_natural_constraints_2(self):
+        for i in range(N):
+            for j in range(P):
+                for k in L:
+                    constraints = []
+                    for l in range(M):
+                        i_j_k_l = '%i_%i_%i_%i' % (i, j, k, l)
+                        constraints.append(self.x_vars[i_j_k_l])
+                    self.problem += lpSum(constraints) >= 1, ("natural constraint 2 %i_%i_%i_%i" % (i,j,k,l))
         pass
 
     def output_result(self):
