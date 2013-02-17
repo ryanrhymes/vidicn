@@ -25,7 +25,7 @@ SEED = 123   # Random seed for the simulation
 M = None     # Number of routers
 L = None     # Number of leaves
 N = 100      # Number of files
-P = 8        # Number of chunks in a file
+P = 1        # Number of chunks in a file
 K = 1        # Number of copies on the path
 C = 50       # Cache size
 
@@ -107,7 +107,7 @@ def load_request(ifn):
     request = []
     for line in open(ifn, 'r').readlines():
         f, c = line.split()
-        request.append([int(f), int(c)])
+        request.append([int(f), 0])
     return array(request)
 
 def start_optimization(reqs, varY):
@@ -138,7 +138,7 @@ class ModelDynamic(object):
         M = len(self.topology.nodes())
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
-        self.chunkPopularity = prepare_chunk_popularity_weibull()
+        self.chunkPopularity = prepare_chunk_popularity_integral()
         self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
         self.X = prepare_decision_var()
@@ -273,7 +273,6 @@ class ModelDynamic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    P = int(sys.argv[2])
     reqs = load_request(sys.argv[1])[:10:] # Liang: temp code
     #varY = load_content_distrib_var(sys.argv[2])
     varY = prepare_content_distrib_var()
