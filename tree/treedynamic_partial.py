@@ -256,8 +256,8 @@ class ModelDynamic(object):
                 for k in range(M):
                     for l in range(M):
                         self.Y[i,j,k,l] = varX[i,j,k,l]
-                        f1.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(varX[i,j,k])))
-                        f2.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(self.Y[i,j,k])))
+                        f1.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(varX[i,j,k,l])))
+                        f2.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(self.Y[i,j,k,l])))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
