@@ -48,6 +48,10 @@ def prepare_filesize_distrib():
     fileSize = random.uniform(size=N) * 10 + 20
     return fileSize
 
+def prepare_chunk_popularity_integral():
+    chunkPopularity = ones([N, P])
+    return chunkPopularity
+
 def prepare_chunk_popularity_weibull():
     k = 0.5; lmd = 1.0;
     chunkPopularity = array([ [ weibull(k, lmd, 0.1+1.0*x/(P-1)) for x in range(P) ] for y in range(N)]) * 100
@@ -89,7 +93,6 @@ def cost_func(G, x, y):
 class ModelStatic(object):
     """The vidicn LP solver"""
     def __init__(self):
-        self.usedtime = time.time()
         pass
 
     def init_model(self):
@@ -119,16 +122,14 @@ class ModelStatic(object):
         # Set constraints
         self.set_cache_constraints()
         self.set_ncopy_constraints()
-        self.set_server_constraints_1()
+        self.set_server_constraints()
+        self.set_natural_constraints_1()
         self.set_natural_constraints_2()
 
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp." + TKN)
         # The problem is solved using PuLP's choice of Solver
         self.problem.solve(GLPK(options=['--mipgap',str(GAP), '--cuts']))
-
-        self.usedtime = time.time() - self.usedtime
-        print "Time overheads: %.3f s" % (self.usedtime)
 
         pass
 
