@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 """
-The VidICN Model Solver
+The VidICN Model Solver for tree topology
 
 REMARK:
 1. The unit used in the model is megabyte (MB)
 
+USAGE: app.py request_trace distribution_trace
+
 Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
-2013.02.09
+2013.02.08
 """
 
 import os
@@ -28,8 +30,8 @@ K = 1        # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
-LOG = "tree_modelstatic_partial"
-TKN = None #time.strftime("%Y%m%d%H%M%S")
+LOG = "tree_modeldynamic_partial_relax"
+TKN = None   # time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
@@ -71,7 +73,13 @@ def prepare_cachesize():
     return cache
 
 def prepare_content_distrib_var():
-    Y = zeros((N, P, M), dtype = int64)
+    topology = construct_topology()
+    M = len(topology.nodes())
+    Y = zeros((N, P, M, M), dtype = int64)
+    for i in range(N):
+        for j in range(P):
+            for k in range(M):
+                Y[i,j,k,0] = 1
     return Y
 
 def prepare_decision_var():
@@ -88,14 +96,41 @@ def cost_func(G, x, y):
     c = c+100 if x*y == 0 else c
     return c
 
+def load_content_distrib_var(ifn):
+    Y = zeros((N, P, M, M), dtype = int64)
+    for line in open(ifn, 'r').readlines():
+        w, x, y, z, c = line.strip().split()
+        Y[int(w),int(x),int(y),int(z)] = int(c)
+    return Y
+
+def load_request(ifn):
+    request = []
+    for line in open(ifn, 'r').readlines():
+        f, c = line.split()
+        request.append([int(f), int(c)])
+    return array(request)
+
+def start_optimization(reqs, varY):
+    obj = ModelDynamic()
+    obj.init_model(None, varY)
+    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
+    i = 1
+    for req in reqs:
+        obj.reset_model(req, obj.Y)
+        obj.solve()
+        obj.output_result(str(i))
+        i += 1
+    pass
+
+
 # Model Solver
 
-class ModelStatic(object):
+class ModelDynamic(object):
     """The vidicn LP solver"""
     def __init__(self):
         pass
 
-    def init_model(self):
+    def init_model(self, req = None, varY = None):
         global M, L
         self.topology = construct_topology()
         deg = math.log(len(self.topology.nodes()), 2)
@@ -106,14 +141,20 @@ class ModelStatic(object):
         self.chunkPopularity = prepare_chunk_popularity_weibull()
         self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
-        self.Y = prepare_content_distrib_var()
         self.X = prepare_decision_var()
+        self.Y = varY
+        self.req = req
+        pass
+
+    def reset_model(self, req, varY):
+        self.req = req
+        self.Y = varY
         pass
 
     def solve(self):
         # Create the 'prob' variable to contain the problem data
         self.problem = LpProblem("The vidicn LP Problem", LpMinimize)
-        self.x_vars = LpVariable.dicts('x', self.X, lowBound = 0, upBound = 1, cat = LpInteger)
+        self.x_vars = LpVariable.dicts('x', self.X, lowBound = 0, upBound = 1, cat = LpContinuous)
 
         # Set objective, first function added to the prob
         print "Set objectives:", time.ctime()
@@ -135,13 +176,15 @@ class ModelStatic(object):
 
     def set_objective(self):
         objective = []
+        u, v = self.req
         for i in range(N):
             for j in range(P):
                 tmp1 = self.chunkSize[i,j] * self.chunkPopularity[i,j] * self.filePopularity[i]
                 for k in L:
-                    for l in range(M):
-                        i_j_k_l = '%i_%i_%i_%i' % (i, j, k, l)
-                        objective.append(tmp1 * cost_func(self.topology, k, l) * self.x_vars[i_j_k_l])
+                    if (i == u and j == v) or (len(where(self.Y[i,j,k]==1)[0]) != 0):
+                        for l in range(M):
+                            i_j_k_l = '%i_%i_%i_%i' % (i, j, k, l)
+                            objective.append(tmp1 * cost_func(self.topology, k, l) * self.x_vars[i_j_k_l])
         self.problem += lpSum(objective), "Maximize byte hit rate and footprint reduction"
         pass
 
@@ -152,6 +195,9 @@ class ModelStatic(object):
                 for j in range(P):
                     i_j_k_k = '%i_%i_%i_%i' % (i, j, k, k)
                     constraints.append(self.chunkSize[i,j] * self.x_vars[i_j_k_k])
+            u, v = self.req
+            u_v_k_k = '%i_%i_%i_%i' % (u, v, k, k)
+            constraints.append(self.chunkSize[u,v] * self.x_vars[u_v_k_k] * (1 - self.Y[u,v,k,k]))
             self.problem += lpSum(constraints) <= self.cache[k], ("cache %i capacity constraint" % k)
         pass
 
@@ -194,18 +240,28 @@ class ModelStatic(object):
                     self.problem += lpSum(constraints) >= 1, ("natural constraint 2 %i_%i_%i_%i" % (i,j,k,l))
         pass
 
-    def output_result(self):
+    def output_result(self, ifn):
         # The status of the solution is printed to the screen
         print "Status:", LpStatus[self.problem.status]
         # Each of the variables is printed with it's resolved optimum value
-        f = open(LOG + ".sol." + TKN, "w")
+        varX = zeros((N, P, M, M), dtype = int64)
         for v in self.problem.variables():
             _, i, j, k, l = v.name.split('_')
-            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(v.varValue)))
+            varX[int(i), int(j), int(k), int(l)] = round(v.varValue)
+
+        f1 = open(LOG + ".sol." + ifn, "w")
+        f2 = open(LOG + ".dis." + ifn, "w")
+        for i in range(N):
+            for j in range(P):
+                for k in range(M):
+                    for l in range(M):
+                        self.Y[i,j,k,l] = varX[i,j,k,l]
+                        f1.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(varX[i,j,k,l])))
+                        f2.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(self.Y[i,j,k,l])))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
-        f = open(LOG + ".chunk." + TKN, "w")
+        f = open(LOG + ".chunk", "w")
         for i in range(N):
             for j in range(P):
                 f.write("%i %i %f %f\n" % (i, j, chunkSize[i][j], chunkPopularity[i][j]))
@@ -217,12 +273,10 @@ class ModelStatic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    P = int(sys.argv[1])
+    P = int(sys.argv[2])
     TKN = str(P)
-    obj = ModelStatic()
-    obj.init_model()
-    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
-    obj.solve()
-    obj.output_result()
-
+    reqs = load_request(sys.argv[1])[:10:] # Liang: temp code
+    #varY = load_content_distrib_var(sys.argv[2])
+    varY = prepare_content_distrib_var()
+    start_optimization(reqs, varY)
     sys.exit(0)

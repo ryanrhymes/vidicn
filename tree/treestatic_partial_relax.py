@@ -28,8 +28,8 @@ K = 1        # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
-LOG = "tree_modelstatic_partial"
-TKN = None #time.strftime("%Y%m%d%H%M%S")
+LOG = "tree_modelstatic_partial_relax"
+TKN = None # time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
@@ -113,7 +113,7 @@ class ModelStatic(object):
     def solve(self):
         # Create the 'prob' variable to contain the problem data
         self.problem = LpProblem("The vidicn LP Problem", LpMinimize)
-        self.x_vars = LpVariable.dicts('x', self.X, lowBound = 0, upBound = 1, cat = LpInteger)
+        self.x_vars = LpVariable.dicts('x', self.X, lowBound = 0, upBound = 1, cat = LpContinuous)
 
         # Set objective, first function added to the prob
         print "Set objectives:", time.ctime()
@@ -201,7 +201,7 @@ class ModelStatic(object):
         f = open(LOG + ".sol." + TKN, "w")
         for v in self.problem.variables():
             _, i, j, k, l = v.name.split('_')
-            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(v.varValue)))
+            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), round(v.varValue)))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
