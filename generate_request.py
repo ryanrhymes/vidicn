@@ -17,6 +17,7 @@ N = 100     # Number of files
 P = 100     # Number of chunks in a file
 R = 100000  # Number of requests
 CDR = 1.0   # Chunk distribution range
+# Original option: CDR=5.0, shiftC=1.0
 
 def request_weibull():
     reqFile = []

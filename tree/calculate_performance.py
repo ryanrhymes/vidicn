@@ -76,15 +76,18 @@ def calculate_performance(G, node, request, cache, chunk):
         if 1 in cache[rf][rct][node][1:]:
             HR += 1.0
             byteHR += chunk[rf][rc]
-            index = where(cache[rf][rct][node] == 1)[0][0]
-            index = len(nx.shortest_path(G, node, index))
-            FP += chunk[rf][rc] * index
+            tpath = float('inf')
+            for x in cache[rf][rct][node][1:]:
+                y = len(nx.shortest_path(G, node, x))
+                if tpath > y:
+                    tpath = y
+            FP += chunk[rf][rc] * tpath
         else:
             FP += chunk[rf][rc] * M
         totalByte += chunk[rf][rc]
     HR /= len(request)
     byteHR /= totalByte
-    FPR = (totalByte * (M+1) - FP) / (totalByte * (M+1))
+    FPR = (totalByte * M - FP) / (totalByte * M)
     return HR, byteHR, FPR
 
 def calculate_document_download_effort(cache):
