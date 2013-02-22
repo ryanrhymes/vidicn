@@ -22,9 +22,9 @@ from pulp import *
 SEED = 123   # Random seed for the simulation
 M = None     # Number of routers
 L = None     # Number of leaves
-N = 1      # Number of files
+N = 100      # Number of files
 P = 1        # Number of chunks in a file
-K = 1        # Number of copies on the path
+K = None     # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
@@ -217,9 +217,10 @@ class ModelStatic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
+    K = int(sys.argv[1])
+    TKN = "%i" % (K)
     obj = ModelStatic()
     obj.init_model()
-    # obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
     obj.solve()
     obj.output_result()
 
