@@ -62,7 +62,7 @@ def get_model_parameter(lines):
         routers = max(routers, int(z))
     return files, chunks, routers
 
-def calculate_performance(request, cache, chunk):
+def calculate_performance(G, node, request, cache, chunk):
     integral = True if cache.shape[1] == 1 else False
     print "calculating performance ... [%s caching]" % ( "integral" if integral else "partial" )
     HR = 0.0
@@ -70,15 +70,17 @@ def calculate_performance(request, cache, chunk):
     totalByte = 0.0
     FP = 0.0
     totalFP = 0.0
+    M = len(nx.shortest_path(G, node, 0))
     for rf, rc in request:
         rct = 0 if integral else rc
-        if 1 in cache[rf][rct]:
+        if 1 in cache[rf][rct][node][1:]:
             HR += 1.0
             byteHR += chunk[rf][rc]
-            index = where(cache[rf][rct] == 1)[0][0] + 1
+            index = where(cache[rf][rct][node] == 1)[0][0]
+            index = len(nx.shortest_path(G, node, index))
             FP += chunk[rf][rc] * index
         else:
-            FP += chunk[rf][rc] * (M+1)
+            FP += chunk[rf][rc] * M
         totalByte += chunk[rf][rc]
     HR /= len(request)
     byteHR /= totalByte
@@ -98,6 +100,18 @@ def calculate_document_download_effort(cache):
     dEffort /= N
     return dEffort
 
+def calculate_average_performance(G, request, cache, chunk):
+    nodes = [4, 5, 6, 7]
+    HR, byteHR, FPR = 0.0, 0.0, 0.0
+    for n in nodes:
+        tHR, tbyteHR, tFPR = calculate_performance(G, n, request, cache, chunk)
+        HR += tHR
+        byteHR += tbyteHR
+        FPR += tFPR
+    HR /= len(nodes)
+    byteHR /= len(nodes)
+    FPR /= len(nodes)
+    return HR, byteHR, FPR
 
 # Main function
 
@@ -106,5 +120,7 @@ if __name__ == "__main__":
     request = load_request(sys.argv[1])
     cache = load_cache(sys.argv[2])
     chunk = load_chunk(sys.argv[3])
+    HR, byteHR, FPR = calculate_average_performance(G, request, cache, chunk)
+    print HR, byteHR, FPR
 
     sys.exit(0)
