@@ -16,12 +16,13 @@ SEED = 555  # Random seed for the simulation
 N = 100     # Number of files
 P = 100     # Number of chunks in a file
 R = 100000  # Number of requests
+CDR = 1.0   # Chunk distribution range
 
 def request_weibull():
     reqFile = []
     reqChunk = []
     shiftF = 10
-    shiftC = 1.0
+    shiftC = 0.1
     while(True):
         x = random.weibull(0.513) * 40
         if x > shiftF and x < N+shiftF:
@@ -30,14 +31,14 @@ def request_weibull():
             break
     while(True):
         x = random.weibull(0.5)
-        if x > shiftC and x < shiftC + 5.0:
+        if x > shiftC and x < shiftC + CDR:
             reqChunk.append(x-shiftC)
         if len(reqChunk) >= R:
             break
     return array(reqFile), array(reqChunk)
 
 def output_request(reqFile, reqChunk):
-    norma, normb = 1.0, P/5.0
+    norma, normb = 1.0, P/CDR
     for i in range(R):
         print (int) (reqFile[i] * norma), (int) (reqChunk[i] * normb)
     pass
