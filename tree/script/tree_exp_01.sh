@@ -3,7 +3,7 @@
 DEG=$1
 LVL=$2
 CHK=2
-CPY=1
+CPY=10
 LOG="tree_d${DEG}_l${LVL}_xcopy_${CHK}chunk.txt"
 
 APP1="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/generate_request.py"
