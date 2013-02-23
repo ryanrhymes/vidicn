@@ -11,10 +11,21 @@ Liang Wang @ Dept. of Computer Science, University of Helsinki, Finland
 
 import os
 import sys
+import math
 import networkx as nx
 
 from numpy import *
 
+TDEG = None  # Tree dgree
+TLVL = None  # Tree level
+
+def build_k_tree(deg=2, lvl=3):
+    edgelist = [(0,1)]
+    for i in range(1, (deg**lvl-1)/(deg-1) + 1):
+        pn = int(math.ceil((i-1.0)/deg))
+        edgelist.append((pn, i))
+    G = nx.Graph(edgelist)
+    return G
 
 def construct_topology():
     edgelist = [(0,1), (1,2), (1,3), (2,4), (2,5), (3,6), (3,7),\
@@ -105,22 +116,24 @@ def calculate_document_download_effort(cache):
     return dEffort
 
 def calculate_average_performance(G, request, cache, chunk):
-    nodes = range(8, 16)
+    M = len(G)
+    L = range(int(math.ceil((M-1.0)/TDEG)), M)
     HR, byteHR, FPR = 0.0, 0.0, 0.0
-    for n in nodes:
+    for n in L:
         tHR, tbyteHR, tFPR = calculate_performance(G, n, request, cache, chunk)
         HR += tHR
         byteHR += tbyteHR
         FPR += tFPR
-    HR /= len(nodes)
-    byteHR /= len(nodes)
-    FPR /= len(nodes)
+    HR /= len(L)
+    byteHR /= len(L)
+    FPR /= len(L)
     return HR, byteHR, FPR
 
 # Main function
 
 if __name__ == "__main__":
-    G = construct_topology()
+    TDEG, TLVL = int(sys.argv[4]), int(sys.argv[5])
+    G = build_k_tree(TDEG, TLVL)
     request = load_request(sys.argv[1])
     cache = load_cache(sys.argv[2])
     chunk = load_chunk(sys.argv[3])
