@@ -24,8 +24,11 @@ M = None     # Number of routers
 L = None     # Number of leaves
 N = 100      # Number of files
 P = None     # Number of chunks in a file
-K = None        # Number of copies on the path
+K = None     # Number of copies on the path
 C = 50       # Cache size
+
+TDEG = None  # Tree dgree
+TLVL = None  # Tree level
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "tree_modelstatic_partial_relax"
@@ -89,6 +92,14 @@ def cost_func(G, x, y):
     # c = c+100 if x*y == 0 else c
     return c
 
+def build_k_tree(deg=2, lvl=3):
+    edgelist = [(0,1)]
+    for i in range(1, (deg**lvl-1)/(deg-1) + 1):
+        pn = int(math.ceil((i-1.0)/deg))
+        edgelist.append((pn, i))
+    G = nx.Graph(edgelist)
+    return G
+
 # Model Solver
 
 class ModelStatic(object):
@@ -98,10 +109,9 @@ class ModelStatic(object):
 
     def init_model(self):
         global M, L
-        self.topology = construct_topology()
-        deg = math.log(len(self.topology.nodes()), 2)
-        L = range(int(2**(deg-1)), int(2**deg))
+        self.topology = build_k_tree(TDEG, TLVL)
         M = len(self.topology.nodes())
+        L = range(int(math.ceil((M-1.0)/TDEG)), M)
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
         self.chunkPopularity = prepare_chunk_popularity_weibull()
@@ -221,6 +231,8 @@ if __name__ == "__main__":
     P = int(sys.argv[1])
     K = int(sys.argv[2])
     TKN = "%i.%i" % (P, K)
+    TDEG = int(sys.argv[3])
+    TLVL = int(sys.argv[4])
     obj = ModelStatic()
     obj.init_model()
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
