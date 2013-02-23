@@ -79,13 +79,14 @@ def prepare_decision_var():
     return X
 
 def construct_topology():
-    edgelist = [(0,1), (1,2), (1,3), (2,4), (2,5), (3,6), (3,7)]
+    edgelist = [(0,1), (1,2), (1,3), (2,4), (2,5), (3,6), (3,7),\
+                    (4,8), (4,9), (5,10), (5,11), (6,12), (6,13), (7,14), (7,15)]
     G = nx.Graph(edgelist)
     return G
 
 def cost_func(G, x, y):
     c = len(nx.shortest_path(G, x, y))
-    c = c+100 if x*y == 0 else c
+    # c = c+100 if x*y == 0 else c
     return c
 
 # Model Solver
