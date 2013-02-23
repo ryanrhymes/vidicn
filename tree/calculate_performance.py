@@ -17,7 +17,8 @@ from numpy import *
 
 
 def construct_topology():
-    edgelist = [(0,1), (1,2), (1,3), (2,4), (2,5), (3,6), (3,7)]
+    edgelist = [(0,1), (1,2), (1,3), (2,4), (2,5), (3,6), (3,7),\
+                    (4,8), (4,9), (5,10), (5,11), (6,12), (6,13), (7,14), (7,15)]
     G = nx.Graph(edgelist)
     return G
 
@@ -104,7 +105,7 @@ def calculate_document_download_effort(cache):
     return dEffort
 
 def calculate_average_performance(G, request, cache, chunk):
-    nodes = [4, 5, 6, 7]
+    nodes = range(8, 16)
     HR, byteHR, FPR = 0.0, 0.0, 0.0
     for n in nodes:
         tHR, tbyteHR, tFPR = calculate_performance(G, n, request, cache, chunk)
