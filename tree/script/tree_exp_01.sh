@@ -21,3 +21,8 @@ rm -rf $LOG
 for x in `seq 1 $CPY`; do
     $APP3 trace_request.$CHK tree_modelstatic_partial_relax.sol.2.$x tree_modelstatic_partial_relax.chunk.2.$x $DEG $LVL | tail -n 1 >> $LOG
 done
+
+for x in `seq 1 $CPY`; do echo $x; done > z1
+paste -d ' ' z1 $LOG > z2
+mv z2 $LOG
+rm z1
