@@ -24,7 +24,7 @@ M = None     # Number of routers
 L = None     # Number of leaves
 N = 100      # Number of files
 P = None     # Number of chunks in a file
-K = None        # Number of copies on the path
+K = None     # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
@@ -221,6 +221,7 @@ if __name__ == "__main__":
     P = int(sys.argv[1])
     K = int(sys.argv[2])
     TKN = "%i.%i" % (P, K)
+    C = int(sys.argv[3])
     obj = ModelStatic()
     obj.init_model()
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
