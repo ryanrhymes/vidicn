@@ -202,7 +202,7 @@ class ModelStatic(object):
         f = open(LOG + ".sol." + TKN, "w")
         for v in self.problem.variables():
             _, i, j, k, l = v.name.split('_')
-            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), round(v.varValue)))
+            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), ceil(v.varValue)))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
@@ -221,7 +221,6 @@ if __name__ == "__main__":
     P = int(sys.argv[1])
     K = int(sys.argv[2])
     TKN = "%i.%i" % (P, K)
-    C = int(sys.argv[3])
     obj = ModelStatic()
     obj.init_model()
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
