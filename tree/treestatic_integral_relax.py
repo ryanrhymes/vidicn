@@ -23,13 +23,13 @@ SEED = 123   # Random seed for the simulation
 M = None     # Number of routers
 L = None     # Number of leaves
 N = 100      # Number of files
-P = None     # Number of chunks in a file
+P = 1        # Number of chunks in a file
 K = None     # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
-LOG = "tree_modelstatic_partial_relax"
-TKN = None # time.strftime("%Y%m%d%H%M%S")
+LOG = "tree_modelstatic_integral"
+TKN = "" #time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
@@ -104,7 +104,7 @@ class ModelStatic(object):
         M = len(self.topology.nodes())
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
-        self.chunkPopularity = prepare_chunk_popularity_weibull()
+        self.chunkPopularity = prepare_chunk_popularity_integral()
         self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         self.cache = prepare_cachesize()
         self.Y = prepare_content_distrib_var()
@@ -114,7 +114,7 @@ class ModelStatic(object):
     def solve(self):
         # Create the 'prob' variable to contain the problem data
         self.problem = LpProblem("The vidicn LP Problem", LpMinimize)
-        self.x_vars = LpVariable.dicts('x', self.X, lowBound = 0, upBound = 1, cat = LpContinuous)
+        self.x_vars = LpVariable.dicts('x', self.X, lowBound = 0, upBound = 1, cat = LpInteger)
 
         # Set objective, first function added to the prob
         print "Set objectives:", time.ctime()
@@ -202,7 +202,7 @@ class ModelStatic(object):
         f = open(LOG + ".sol." + TKN, "w")
         for v in self.problem.variables():
             _, i, j, k, l = v.name.split('_')
-            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), round(v.varValue)))
+            f.write("%i %i %i %i %i\n" % (int(i), int(j), int(k), int(l), int(v.varValue)))
         pass
 
     def output_chunk_info(self, chunkSize, chunkPopularity):
@@ -218,12 +218,10 @@ class ModelStatic(object):
 # Main function, start the solver here. Let's rock!
 
 if __name__ == "__main__":
-    P = int(sys.argv[1])
-    K = int(sys.argv[2])
-    TKN = "%i.%i" % (P, K)
+    K = int(sys.argv[1])
+    TKN = "%i" % (K)
     obj = ModelStatic()
     obj.init_model()
-    obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)
     obj.solve()
     obj.output_result()
 

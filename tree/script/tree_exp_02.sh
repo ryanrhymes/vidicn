@@ -1,26 +1,28 @@
 #!/usr/bin/env bash
 
-CHK=$1
-CPY=10
-LOG="tree_xcopy_${CHK}chunk.txt"
+CHK=20
+CPY=$1
+LOG="tree_${CPY}copy_xchunk.txt"
 
 APP1="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/generate_request.py"
 APP2="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/tree/treestatic_partial_relax.py"
 APP3="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/tree/calculate_performance.py"
 
-$APP1 $CHK > trace_request.$CHK
+for x in `seq 2 2 $CHK`; do
+    $APP1 $x > trace_request.$x
+done
 
-for x in `seq 1 $CPY`; do
-    $APP2 $CHK $x
+for x in `seq 2 2 $CHK`; do
+    $APP2 $x $CPY
 done
 
 rm -rf $LOG
 
-for x in `seq 1 $CPY`; do
-    $APP3 trace_request.$CHK tree_modelstatic_partial_relax.sol.${CHK}.$x tree_modelstatic_partial_relax.chunk.${CHK}.$x | tail -n 1 >> $LOG
+for x in `seq 2 2 $CHK`; do
+    $APP3 trace_request.$x tree_modelstatic_partial_relax.sol.${x}.${CPY} tree_modelstatic_partial_relax.chunk.${x}.${CPY} | tail -n 1 >> $LOG
 done
 
-for x in `seq 1 $CPY`; do echo $x; done > z1
+for x in `seq 2 2 $CHK`; do echo $x; done > z1
 paste -d ' ' z1 $LOG > z2
 mv z2 $LOG
 rm z1
