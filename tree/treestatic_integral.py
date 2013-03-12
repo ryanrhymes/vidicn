@@ -130,7 +130,7 @@ class ModelStatic(object):
         # The problem data is written to an .lp file
         self.problem.writeLP(LOG + ".lp." + TKN)
         # The problem is solved using PuLP's choice of Solver
-        self.problem.solve(GLPK(options=['--mipgap',str(GAP), '--cuts']))
+        self.problem.solve(GLPK(options=['--mipgap',str(GAP), '--cuts', '--fpump']))
 
         pass
 

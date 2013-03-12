@@ -86,7 +86,7 @@ def construct_topology():
 
 def cost_func(G, x, y):
     c = len(nx.shortest_path(G, x, y))
-    # c = c+100 if x*y == 0 else c
+    c = c+3 if x*y == 0 else c
     return c
 
 # Model Solver
