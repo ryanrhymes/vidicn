@@ -24,7 +24,7 @@ M = None     # Number of routers
 L = None     # Number of leaves
 N = 100      # Number of files
 P = None     # Number of chunks in a file
-K = 1        # Number of copies on the path
+K = None     # Number of copies on the path
 C = 50       # Cache size
 
 GAP = 0.01   # MIP gap for the solver
@@ -85,7 +85,7 @@ def construct_topology():
 
 def cost_func(G, x, y):
     c = len(nx.shortest_path(G, x, y))
-    c = c+100 if x*y == 0 else c
+    c = c+1 if x*y == 0 else c
     return c
 
 # Model Solver
@@ -218,7 +218,9 @@ class ModelStatic(object):
 
 if __name__ == "__main__":
     P = int(sys.argv[1])
-    TKN = str(P)
+    K = int(sys.argv[2])
+    TKN = "%i.%i" % (P, K)
+    C = int(sys.argv[3])
     obj = ModelStatic()
     obj.init_model()
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)

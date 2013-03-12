@@ -102,6 +102,7 @@ class ModelStatic(object):
         deg = math.log(len(self.topology.nodes()), 2)
         L = range(int(2**(deg-1)), int(2**deg))
         M = len(self.topology.nodes())
+        print L, M; sys.exit()
         self.filePopularity = prepare_file_popularity()
         self.fileSize = prepare_filesize_distrib()
         self.chunkPopularity = prepare_chunk_popularity_weibull()
