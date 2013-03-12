@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CSZ=$1
-CHK=2
+CHK=$2
 CPY=10
 LOG="tree_xcopy_${CHK}chunk_csz${CSZ}.txt"
 
@@ -18,7 +18,7 @@ done
 rm -rf $LOG
 
 for x in `seq 1 $CPY`; do
-    $APP3 trace_request.$CHK tree_modelstatic_partial_relax.sol.2.$x tree_modelstatic_partial_relax.chunk.2.$x | tail -n 1 >> $LOG
+    $APP3 trace_request.$CHK tree_modelstatic_partial_relax.sol.$CHK.$x tree_modelstatic_partial_relax.chunk.$CHK.$x | tail -n 1 >> $LOG
 done
 
 for x in `seq 1 $CPY`; do echo $x; done > z1
