@@ -64,58 +64,63 @@ def get_model_parameter(lines):
     return files, chunks, routers
 
 def calculate_performance(G, node, request, cache, chunk):
-    integral = True if cache.shape[1] == 1 else False
+    N, P, M, _ = cache.shape
+    integral = True if P == 1 else False
     print "calculating performance ... [%s caching]" % ( "integral" if integral else "partial" )
     HR = 0.0
     byteHR = 0.0
     totalByte = 0.0
     FP = 0.0
     totalFP = 0.0
-    M = len(nx.shortest_path(G, node, 0))
     for rf, rc in request:
         rct = 0 if integral else rc
+        tpath = nx.diameter(G) + 2
         if 1 in cache[rf][rct][node][1:]:
             HR += 1.0
             byteHR += chunk[rf][rc]
-            tpath = float('inf')
-            for x in cache[rf][rct][node][1:]:
+            for x in where(cache[rf,rct,node]==1)[0]:
                 y = len(nx.shortest_path(G, node, x))
                 if tpath > y:
                     tpath = y
-            FP += chunk[rf][rc] * tpath
-        else:
-            FP += chunk[rf][rc] * M
+        FP += chunk[rf][rc] * tpath
         totalByte += chunk[rf][rc]
     HR /= len(request)
     byteHR /= totalByte
     FPR = (totalByte * M - FP) / (totalByte * M)
-    return HR, byteHR, FPR
+    dDE = calculate_document_download_effort(G, node, cache)
+    print node, "---->", HR, byteHR, FPR, dDE
+    return HR, byteHR, FPR, dDE
 
-def calculate_document_download_effort(cache):
+def calculate_document_download_effort(G, node, cache):
     dEffort = 0.0
-    N, P, M = cache.shape
+    N, P, M, _ = cache.shape
     for i in range(N):
         tde = 0.0
         for j in range(P):
-            tarr = where(cache[i][j] == 1)[0]
-            index = M + 1 if len(tarr) == 0 else tarr[0]
-            tde += index
-        dEffort += tde / ((M + 1) * P)
-    dEffort /= N
+            tpath = nx.diameter(G) + 2
+            for x in where(cache[i,j,node]==1)[0]:
+                y = len(nx.shortest_path(G, node, x))
+                if tpath > y:
+                    tpath = y
+            tde += tpath
+        dEffort += tde
+    dEffort /= N * P
     return dEffort
 
 def calculate_average_performance(G, request, cache, chunk):
     nodes = range(8, 16)
-    HR, byteHR, FPR = 0.0, 0.0, 0.0
+    HR, byteHR, FPR, dDE = 0.0, 0.0, 0.0, 0.0
     for n in nodes:
-        tHR, tbyteHR, tFPR = calculate_performance(G, n, request, cache, chunk)
+        tHR, tbyteHR, tFPR, tdDE = calculate_performance(G, n, request, cache, chunk)
         HR += tHR
         byteHR += tbyteHR
         FPR += tFPR
+        dDE += tdDE
     HR /= len(nodes)
     byteHR /= len(nodes)
     FPR /= len(nodes)
-    return HR, byteHR, FPR
+    dDE /= len(nodes)
+    return HR, byteHR, FPR, dDE
 
 # Main function
 
@@ -124,7 +129,7 @@ if __name__ == "__main__":
     request = load_request(sys.argv[1])
     cache = load_cache(sys.argv[2])
     chunk = load_chunk(sys.argv[3])
-    HR, byteHR, FPR = calculate_average_performance(G, request, cache, chunk)
-    print HR, byteHR, FPR
+    HR, byteHR, FPR, dDE = calculate_average_performance(G, request, cache, chunk)
+    print HR, byteHR, FPR, dDE
 
     sys.exit(0)
