@@ -88,7 +88,7 @@ def calculate_performance(G, node, request, cache, chunk):
     byteHR /= totalByte
     FPR = (totalByte * M - FP) / (totalByte * M)
     dDE = calculate_document_download_effort(G, node, cache)
-    print node, "---->", HR, byteHR, FPR, dDE
+    #print node, "---->", HR, byteHR, FPR, dDE
     return HR, byteHR, FPR, dDE
 
 def calculate_document_download_effort(G, node, cache):
