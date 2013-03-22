@@ -15,8 +15,8 @@ import os
 import sys
 
 print "Loading CacheStartegy Module"
-sys.path.append('/fs/home/lxwang/cone/lxwang/litelab/router/')
-sys.path.append('/fs/home/lxwang/cone/lxwang/litelab/router/CacheStrategy/')
+sys.path.append('/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/router/')
+sys.path.append('/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/router/CacheStrategy/')
 
 if __name__=="__main__":
     print sys.argv[0]

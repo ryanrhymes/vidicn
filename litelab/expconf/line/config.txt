@@ -19,8 +19,8 @@
 [ebandwidth]:0
 [linklossrate]:0.0
 [linkdelay]:0.0
-[cachestg]:green_lru
-[cacherpl]:lru
+[cachestg]:vidicn_heuristic_0
+[cacherpl]:cache_lru
 [cachesize]:128
 [ihandler]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/ihandler/
 [upperapp]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/apps.txt

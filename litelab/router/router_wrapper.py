@@ -94,7 +94,7 @@ def hook_cache(router, cstg, cssz, crpl, logfh):
 
     # Load the corresponding cache strategy
     exec('from CacheStrategy.%s import *' % cstg)
-    exec('from CacheStrategy.cache_%s import *' % crpl)
+    exec('from CacheStrategy.%s import *' % crpl)
 
     # Hook on different admission & cooperative model: lru, cachedbit,
     # pcachedbit, pushcache, nbsearch, mhnbsearch, mfr, pushprob, smartre
@@ -102,7 +102,7 @@ def hook_cache(router, cstg, cssz, crpl, logfh):
     router.register_ihandler(mycs.ihandler)
 
     # Hook on different replacement model: lru, lfu, lfuda, fifobucket
-    exec('mycs.cache = cache_%s(%i)' % (crpl, cssz))
+    exec('mycs.cache = %s(%i)' % (crpl, cssz))
 
     # Hook on log file handle
     if mycs is not None:

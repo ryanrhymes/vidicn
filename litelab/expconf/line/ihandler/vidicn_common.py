@@ -11,7 +11,6 @@ P = 8        # Number of chunks in a file
 
 
 def load_request(ifn):
-    print "load request trace ..."
     request = []
     for line in open(ifn, 'r').readlines():
         f, c = line.split()
