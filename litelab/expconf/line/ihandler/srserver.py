@@ -19,6 +19,7 @@ from ctypes import *
 sys.path.append('/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/router/')
 from common import *
 from messageheader import *
+from vidicn_common import *
 
 class Server(object):
     """This class serves all the requests from the clients."""
@@ -26,7 +27,10 @@ class Server(object):
         self.vrid     = vrid
         self.logfh    = None
         self.router   = router
-        self.chunks   = load_file(ifn)    # load all the (key,chunk) into a dict
+        self.filePopularity = prepare_file_popularity()
+        self.fileSize = prepare_filesize_distrib()
+        self.chunkPopularity = prepare_chunk_popularity_weibull()
+        self.chunkSize = prepare_chunksize_distrib(self.fileSize)
         pass
 
     def __del__(self):
@@ -44,7 +48,6 @@ class Server(object):
 
                 shdr = MessageHeader()
                 shdr.type = MessageType.RESPONSE
-                shdr.id = rhdr.id
                 shdr.seq = rhdr.seq
                 shdr.crid = rhdr.crid
                 shdr.control = rhdr.control
@@ -52,7 +55,10 @@ class Server(object):
                 shdr.dst = rhdr.src
                 shdr.hit = 0
                 shdr.hop = rhdr.hop + 1
-                shdr.data = self.chunks[rhdr.id]
+                shdr.fil = rhdr.fil
+                shdr.chk = rhdr.chk
+                shdr.siz = self.chunkSize[rhdr.fil, rhdr.chk]
+                shdr.data = "hello"
 
                 self.router.send(shdr)
                 #print "RESPONSE -> %s" % (str(shdr.dst))
@@ -72,8 +78,7 @@ def main(router, args):
     ifn    = args['app_args']
     server = Server(vrid, ifn, router)
     server.logfh = open("%s/server-%i" % (logdir, vrid), 'w')
-    # Liang: debug
-    time.sleep(15)
+
     server.start_service()
     pass
 

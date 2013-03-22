@@ -1,2 +1,2 @@
-srclient@0 /cs/fs/home/lxwang/tmp/trace/trace.meta $7
-srserver@7 /cs/fs/home/lxwang/tmp/trace/trace.data
+srclient@0 /cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/trace_request.8 $7
+srserver@7 /cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/trace_request.8

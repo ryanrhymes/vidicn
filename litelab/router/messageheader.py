@@ -35,6 +35,9 @@ class MessageHeader(Structure):
                  # ("neighbor", c_ubyte),
                  # ("_visited", c_ubyte * DIGEST_LEN),
                  ("_crid",    c_ubyte * DIGEST_LEN),
+                 ("fil",      c_int32),   # file index
+                 ("chk",      c_int32),   # chunk index
+                 ("siz",      c_float),   # chunk size
                  ("src",      c_int32),
                  ("dst",      c_int32),
                  ("nxt",      c_int32),   # next hop, -1 means unset
