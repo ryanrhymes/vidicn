@@ -1,0 +1,9 @@
+# vr	cache_size	cachestg	cacherpl	queuesize	queuepolicy	ibandwidth	ebandwidth	...
+0	0	none	*	*	*	*	*
+1	0	none	*	*	*	*	*
+2	0	none	*	*	*	*	*
+3	0	none	*	*	*	*	*
+4	0	none	*	*	*	*	*
+5	0	none	*	*	*	*	*
+6	0	none	*	*	*	*	*
+7	0	none	*	*	*	*	*

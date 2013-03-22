@@ -1,0 +1,2 @@
+srclient@0 /cs/fs/home/lxwang/tmp/trace/trace.meta $7
+srserver@7 /cs/fs/home/lxwang/tmp/trace/trace.data
