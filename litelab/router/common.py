@@ -238,25 +238,6 @@ def hash_header(hdr):
     h = c_float(h).value  # Liang: This is important!
     return h
 
-# Liang: debug, please remove this function
-def gget_manifest(ifn):
-    """LP solution, needs to be fixed."""
-    manifest = {}
-
-    manifest[1] = {}
-    manifest[1]['path'] = [0, 1, 2, 3, 5]
-    manifest[1][1] = {'range': (0.0, 0.2), 'quota': 100}
-    manifest[1][2] = {'range': (0.2, 0.5), 'quota': 100}
-    manifest[1][3] = {'range': (0.5, 0.7), 'quota': 100}
-
-    manifest[2] = {}
-    manifest[2]['path'] = [0, 1, 2, 4, 6]
-    manifest[2][1] = {'range': (0.0, 0.1), 'quota': 100}
-    manifest[2][2] = {'range': (0.1, 0.4), 'quota': 100}
-    manifest[2][4] = {'range': (0.4, 1.0), 'quota': 100}
-
-    return manifest
-
 def get_manifest(ifn):
     """LP solution, needs to be fixed."""
     manifest = pickle.Unpickler(open(ifn, "r")).load()
