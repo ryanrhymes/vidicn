@@ -20,6 +20,7 @@ class vidicn_heuristic_0(object):
         self.router = router  # Cache's corresponding router
         self.cache = None
         self.logfh = None
+        self.freq = dict()
         pass
 
     def ihandler(self, hdr, router):
@@ -32,13 +33,16 @@ class vidicn_heuristic_0(object):
         dst = hdr.dst
 
         if hdr.type == MessageType.REQUEST:
+            self.freq[fil] = self.freq.get(fil, 0.0) + 1
+            self.freq[(fil,chk)] = self.freq.get((fil,chk), 0.0) + 1
+
             if self.cache.is_hit(cid):
                 logme3(self.logfh, hdr.seq, src, dst, "REQ", 1, fil, chk, hdr.hop)
                 hdr.type = MessageType.RESPONSE
                 hdr.swap_src_dst()
                 hdr.hit = 1
                 hdr.hop += 1
-                chunk = self.cache.get_chunk(cid, random.random())
+                chunk = self.cache.get_chunk(cid, self.utility(fil,chk,siz))
                 hdr.siz = chunk['size']
 
             else:
@@ -47,12 +51,18 @@ class vidicn_heuristic_0(object):
 
         elif hdr.type == MessageType.RESPONSE:
             logme3(self.logfh, hdr.seq, src, dst, "RSP", 0, fil, chk, hdr.hop)
-            evict = self.cache.add_chunk(cid, random.random(), siz)
+            evict = self.cache.add_chunk(cid, self.utility(fil,chk,siz), siz)
             #if evict[0]:
             #    logme2(self.logfh, hdr.seq, src, dst, "DEL", 0, evict[0])
             logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk, hdr.hop)
 
         return False
+
+    def utility(self, fil, chk, siz):
+        uval = self.freq.get(fil, 0.0) * self.freq.get((fil,chk), 0.0) * siz
+        return uval
+
+    pass
 
 
 if __name__ == "__main__":

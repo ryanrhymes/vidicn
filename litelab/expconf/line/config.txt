@@ -21,7 +21,7 @@
 [linkdelay]:0.0
 [cachestg]:vidicn_heuristic_0
 [cacherpl]:vidicn_cache_rpl
-[cachesize]:128
+[cachesize]:50
 [ihandler]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/ihandler/
 [upperapp]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/apps.txt
 [logdir]:/group/home/cone/lxwang/vidicn_line

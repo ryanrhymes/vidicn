@@ -21,11 +21,11 @@ from common import *
 from messageheader import *
 from vidicn_common import *
 
-EXPTIME = 180 # Experiment time in logic hour
-TFACTOR = 30  # Expansion factor in seconds
 TALIGNMENT = 10 # alignement for startup time.
-REQRATE = [5, 5, 5] 
-
+filePopularity = prepare_file_popularity()
+fileSize = prepare_filesize_distrib()
+chunkPopularity = prepare_chunk_popularity_weibull()
+chunkSize = prepare_chunksize_distrib(fileSize)
 
 
 
@@ -47,9 +47,6 @@ class Client(object):
         pass
 
     def start_request(self):
-        t_start = time.time()
-        t_stop = t_start + EXPTIME * TFACTOR
-
         for i in range(self.reqs.shape[0]):
             try:
                 self.seq += 1
@@ -73,6 +70,7 @@ class Client(object):
         hdr.type = MessageType.REQUEST
         hdr.fil = cid[0]
         hdr.chk = cid[1]
+        hdr.siz = chunkSize[cid[0],cid[1]]
         hdr.seq = seq
         hdr.src = self.vrid
         hdr.dst = server
