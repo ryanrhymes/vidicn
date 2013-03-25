@@ -15,72 +15,81 @@ import os
 import sys
 from multiprocessing import *
 
-#sys.path.append("/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/router/")
-#from prouter import Router
+sys.path.append('/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/ihandler/')
+from vidicn_common import *
+
+D2SERVER = 7.0  # Hops to the server
+filePopularity = prepare_file_popularity()
+fileSize = prepare_filesize_distrib()
+chunkPopularity = prepare_chunk_popularity_weibull()
+chunkSize = prepare_chunksize_distrib(fileSize)
+
 
 def parse_log(ifn):
     rsp = 1
     hit = 0
     hop = 0
-    ret = 0
+    fpa = 0
+    fpb = 0
+    brsp = 0
+    bhit = 0
 
-    pattern = re.compile(r"(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+)")
+    pattern = re.compile(r"(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+?)\t(\S+)\t(\S+)")
 
     for line in open(ifn,'r'):
-        print line
         d = parse_line(line, pattern)
 
         if not d:
             print line
-        if d['typ'] == 'RSP':
+        if d['typ'] == 1:
             rsp += 1
+            brsp += chunkSize[d['fil'], d['chk']]
             if d['hit'] == 1:
                 hit += 1
-            hop += d['hop']/2
-        elif d['typ'] == 'RETRANS':
-            ret += 1
+                bhit += chunkSize[d['fil'], d['chk']] 
+            hop += d['hop']/2.0 - 1
+            fpa += chunkSize[d['fil'], d['chk']] * (d['hop']/2.0 - 1)
+            fpb += chunkSize[d['fil'], d['chk']] * D2SERVER
 
-    print "%s: hitratio:%.4f, avg.hops:%.2f, hit:%i, rsp:%i, ret:%i" % \
-    (ifn, 1.0*hit/rsp, 1.0*hop/rsp, hit, rsp, ret)
-    return rsp, hit, hop, ret
+    print "%s: byte_hit:%.4f, fpr:%.4f, avg.hops:%.2f" % \
+    (ifn, bhit/brsp, (fpb-fpa)/fpb, 1.0*hop/rsp)
+    return bhit/brsp, (fpb-fpa)/fpb, 1.0*hop/rsp
 
 
 def parse_line(line, pattern):
     d = {}
     m = pattern.search(line)
-    print m
     if m:
         m = m.groups()
         d['ts']  = float(m[0])
         d['seq'] = int(m[1])
         d['src'] = m[2]
         d['dst'] = m[3]
-        d['typ'] = m[4]
+        d['typ'] = int(m[4])
         d['hit'] = int(m[5])
-        d['cid'] = m[6]
-        d['hop'] = int(m[7])
+        d['fil'] = int(m[6])
+        d['chk'] = int(m[7])
+        d['hop'] = int(m[8])
     return d
 
 def parse_all(ifns):
-    rsp = 0
-    hit = 0
+    bhit = 0
     hop = 0
-    ret = 0
+    fpr = 0
 
     p = Pool(processes=cpu_count())
     it =p.imap(parse_log, ifns)
     while True:
         try:
-            rspt, hitt, hopt, rett = it.next()
-            rsp += rspt
-            hit += hitt
+            bhitt, fprt, hopt = it.next()
+            bhit += bhitt
+            fpr += fprt
             hop += hopt
-            ret += rett
         except StopIteration:
             break
     print "-"*50
-    print "sys: hitratio:%.4f, avg.hops:%.2f, hit:%i, rsp:%i, ret:%i" % \
-    (1.0*hit/rsp, 1.0*hop/rsp, hit, rsp, ret)
+    print "sys: byte_hit:%.4f, fpr:%.4f, avg.hops:%.2f" % \
+    (bhit/len(ifns), fpr/len(ifns), hop/len(ifns))
 
     pass
 

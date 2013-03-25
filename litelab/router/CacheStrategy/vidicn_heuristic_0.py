@@ -33,25 +33,24 @@ class vidicn_heuristic_0(object):
 
         if hdr.type == MessageType.REQUEST:
             if self.cache.is_hit(cid):
-                logme3(self.logfh, hdr.seq, src, dst, "REQ", 1, fil, chk)
+                logme3(self.logfh, hdr.seq, src, dst, "REQ", 1, fil, chk, hdr.hop)
                 hdr.type = MessageType.RESPONSE
                 hdr.swap_src_dst()
                 hdr.hit = 1
+                hdr.hop += 1
                 chunk = self.cache.get_chunk(cid, random.random())
                 hdr.siz = chunk['size']
 
             else:
-                logme3(self.logfh, hdr.seq, src, dst, "REQ", 0, fil, chk)
+                logme3(self.logfh, hdr.seq, src, dst, "REQ", 0, fil, chk, hdr.hop)
                 pass
 
         elif hdr.type == MessageType.RESPONSE:
-            logme3(self.logfh, hdr.seq, src, dst, "RSP", 0, fil, chk)
+            logme3(self.logfh, hdr.seq, src, dst, "RSP", 0, fil, chk, hdr.hop)
             evict = self.cache.add_chunk(cid, random.random(), siz)
             #if evict[0]:
             #    logme2(self.logfh, hdr.seq, src, dst, "DEL", 0, evict[0])
-            logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk)
-        if self.router.vrid==1:
-            print "*"*30, self.cache.cache.shape, self.cache.usedc
+            logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk, hdr.hop)
 
         return False
 

@@ -57,7 +57,7 @@ class Client(object):
                 self.request(self.seq, self.reqs[i], server)
                 hdr = self.router.recv()
                 print i, "=====>", hdr.src, hdr.dst, hdr.hop, hdr.fil, hdr.chk
-                #time.sleep(5)
+                logme3(self.logfh, hdr.seq, hdr.src, hdr.dst, hdr.type, hdr.hit, hdr.fil, hdr.chk, hdr.hop)
             except Exception, err:
                 print "Exception:Client.start_request():", err
 

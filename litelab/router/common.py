@@ -135,11 +135,11 @@ def logme2(ifh, seq, src, dst, msgtype, hit, cid):
         ifh.flush()
     pass
 
-def logme3(ifh, seq, src, dst, msgtype, hit, fkey, ckey):
+def logme3(ifh, seq, src, dst, msgtype, hit, fkey, ckey, hops):
     if ifh:
         ts = time.time()
-        ifh.write("%f\t%i\t%s\t%s\t%s\t%i\t%i\t%i\n" % 
-                  (ts,seq,str(src),str(dst),msgtype,hit,fkey,ckey))
+        ifh.write("%f\t%i\t%s\t%s\t%s\t%i\t%i\t%i\t%i\n" % 
+                  (ts,seq,str(src),str(dst),msgtype,hit,fkey,ckey,hops))
         ifh.flush()
     pass
 
