@@ -56,8 +56,8 @@ class Client(object):
                 server = pyrnd.sample(self.servers, 1)[0]
                 self.request(self.seq, self.reqs[i], server)
                 hdr = self.router.recv()
-                print "=====>", hdr.seq, hdr.src, hdr.dst, hdr.fil, hdr.chk
-                time.sleep(5)
+                print i, "=====>", hdr.src, hdr.dst, hdr.hop, hdr.fil, hdr.chk
+                #time.sleep(5)
             except Exception, err:
                 print "Exception:Client.start_request():", err
 

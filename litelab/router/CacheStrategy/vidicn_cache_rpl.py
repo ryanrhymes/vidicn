@@ -55,18 +55,19 @@ class vidicn_cache_rpl(object):
                     t_evict.append(t_index)
                     t_index += 1
                 if (t_usedc + size <= self.quota) and (t_utility <= utility):
-                    self.usedc = t_usedc
+                    self.usedc = t_usedc + size
                     for eci in t_evict:
                         evict.append(self.cache[eci])
                     self.cache = np.delete(self.cache, t_evict, axis=0)
+                    self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
             else:
                 self.usedc += size
-            self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
+                self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
 
         self.cache = np.sort(self.cache, order=['utility', 'timestamp'])
         return evict
 
-    def get_chunk(self, key):
+    def get_chunk(self, key, utility):
         chunk = None
         fkey, ckey = key
         ts = time.time()
@@ -74,6 +75,7 @@ class vidicn_cache_rpl(object):
         if len(hit):
             hit = hit[0]
             chunk = self.cache[hit]
+            self.cache[hit]['utility'] = utility
             self.cache[hit]['timestamp'] = ts
         self.cache = np.sort(self.cache, order=['utility', 'timestamp'])
         return chunk
@@ -93,10 +95,13 @@ class vidicn_cache_rpl(object):
         return len(self.cache)
 
     def is_full(self):
-        return len(self.llist) >= self.quota
+        return self.usedc >= self.quota
 
     def is_hit(self, key):
-        return self.cache.has_key(key)
+        fkey, ckey = key
+        hit = np.where((self.cache['fkey']==fkey) & (self.cache['ckey']==ckey))[0]
+        hit = True if len(hit) else False
+        return hit
 
     def get_val_by_key(self, key):
         """Remark: Pay attention to the differences between this function and

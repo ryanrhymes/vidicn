@@ -135,6 +135,14 @@ def logme2(ifh, seq, src, dst, msgtype, hit, cid):
         ifh.flush()
     pass
 
+def logme3(ifh, seq, src, dst, msgtype, hit, fkey, ckey):
+    if ifh:
+        ts = time.time()
+        ifh.write("%f\t%i\t%s\t%s\t%s\t%i\t%i\t%i\n" % 
+                  (ts,seq,str(src),str(dst),msgtype,hit,fkey,ckey))
+        ifh.flush()
+    pass
+
 def logtimetoken(ifn, info=''):
     """This is a tentative solution for excluding entries in warm-up phase."""
     ifh = open(ifn, 'a')

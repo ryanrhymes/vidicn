@@ -13,7 +13,7 @@ import binascii
 from ctypes import *
 from router.common import *
 from messageheader import *
-
+import random
 
 class vidicn_heuristic_0(object):
     def __init__(self, router, cachesize):
@@ -24,29 +24,34 @@ class vidicn_heuristic_0(object):
 
     def ihandler(self, hdr, router):
         hdr.hop += 1
-        cid = hdr.id
+        fil = hdr.fil
+        chk = hdr.chk
+        cid = (fil, chk)
+        siz = hdr.siz
         src = hdr.src
         dst = hdr.dst
 
-        print self.router.vrid, "---->", hdr.seq
-
         if hdr.type == MessageType.REQUEST:
             if self.cache.is_hit(cid):
-                logme2(self.logfh, hdr.seq, src, dst, "REQ", 1, cid)
+                logme3(self.logfh, hdr.seq, src, dst, "REQ", 1, fil, chk)
                 hdr.type = MessageType.RESPONSE
                 hdr.swap_src_dst()
                 hdr.hit = 1
-                hdr.data = self.cache.get_chunk(cid)
+                chunk = self.cache.get_chunk(cid, random.random())
+                hdr.siz = chunk['size']
 
             else:
-                logme2(self.logfh, hdr.seq, src, dst, "REQ", 0, cid)
+                logme3(self.logfh, hdr.seq, src, dst, "REQ", 0, fil, chk)
+                pass
 
         elif hdr.type == MessageType.RESPONSE:
-            logme2(self.logfh, hdr.seq, src, dst, "RSP", 0, cid)
-            evict = self.cache.add_chunk(cid, hdr.data)
-            if evict[0]:
-                logme2(self.logfh, hdr.seq, src, dst, "DEL", 0, evict[0])
-            logme2(self.logfh, hdr.seq, src, dst, "ADD", 0, cid)
+            logme3(self.logfh, hdr.seq, src, dst, "RSP", 0, fil, chk)
+            evict = self.cache.add_chunk(cid, random.random(), siz)
+            #if evict[0]:
+            #    logme2(self.logfh, hdr.seq, src, dst, "DEL", 0, evict[0])
+            logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk)
+        if self.router.vrid==1:
+            print "*"*30, self.cache.cache.shape, self.cache.usedc
 
         return False
 
