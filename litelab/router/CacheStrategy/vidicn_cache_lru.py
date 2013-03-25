@@ -4,7 +4,7 @@
 # relevant operations on cache can be implemented in this class.
 #
 # Liang Wang @ Dept. Computer Science, University of Helsinki, Finland
-# 2011.05.31 created, 2011.06.12 modified.
+# 2013.03.25
 #
 
 import os
@@ -16,7 +16,7 @@ from ctypes import *
 #from common import *
 
 
-class vidicn_cache_rpl(object):
+class vidicn_cache_lru(object):
     def __init__(self, quota):
         self.dtype = np.dtype([('fkey', np.int32), ('ckey', np.int32), ('size', np.float64), ('timestamp', np.float64)])
         self.cache = np.array([], dtype=self.dtype)
@@ -40,27 +40,16 @@ class vidicn_cache_rpl(object):
             self.cache[hit]['timestamp'] = ts
         else:
             if self.usedc + size > self.quota:
-                t_usedc = self.usedc
-                t_utility = 0.0
-                t_evict = []
-                t_index = 0
-                while True:
-                    if (t_usedc + size <= self.quota) or (t_utility > utility):
-                        break
-                    ec = self.cache[t_index]
-                    t_usedc -= ec['size']
-                    t_utility += ec['utility']
-                    t_evict.append(t_index)
-                    t_index += 1
-                if (t_usedc + size <= self.quota) and (t_utility <= utility):
-                    self.usedc = t_usedc + size
-                    for eci in t_evict:
-                        evict.append(self.cache[eci])
-                    self.cache = np.delete(self.cache, t_evict, axis=0)
-                    self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
+                while self.usedc + size > self.quota:
+                    ec = self.cache[0]
+                    evict.append(ec)
+                    self.usedc -= ec['size']
+                    self.cache = np.delete(self.cache, 0, axis=0)
+                self.usedc += size
+                self.cache = np.append(self.cache, np.array([(fkey, ckey, size, ts)], dtype=self.dtype), axis=0)
             else:
                 self.usedc += size
-                self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
+                self.cache = np.append(self.cache, np.array([(fkey, ckey, size, ts)], dtype=self.dtype), axis=0)
 
         self.cache = np.sort(self.cache, order=['timestamp'])
         return evict

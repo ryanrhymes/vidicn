@@ -40,7 +40,6 @@ class vidicn_strategy_all(object):
                 hdr.hop += 1
                 chunk = self.cache.get_chunk(cid)
                 hdr.siz = chunk['size']
-
             else:
                 logme3(self.logfh, hdr.seq, src, dst, "REQ", 0, fil, chk, hdr.hop)
                 pass
