@@ -18,6 +18,7 @@ class cache_lru(object):
     def __init__(self, quota):
         self.cache = {}
         self.llist = []
+        self.usedc = 0
         self.quota = quota
         self.pathcache ={}
         self.logfh = None
