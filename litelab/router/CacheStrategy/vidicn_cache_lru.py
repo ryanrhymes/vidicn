@@ -18,8 +18,7 @@ from ctypes import *
 
 class vidicn_cache_rpl(object):
     def __init__(self, quota):
-        self.dtype = np.dtype([('fkey', np.int32), ('ckey', np.int32), ('utility', np.float64), \
-                                   ('size', np.float64), ('timestamp', np.float64)])
+        self.dtype = np.dtype([('fkey', np.int32), ('ckey', np.int32), ('size', np.float64), ('timestamp', np.float64)])
         self.cache = np.array([], dtype=self.dtype)
         self.usedc = 0.0
         self.quota = quota
@@ -35,23 +34,35 @@ class vidicn_cache_rpl(object):
         evict = []
         fkey, ckey = key
         ts = time.time()
-        utility = 0.0
         hit = np.where((self.cache['fkey']==fkey) & (self.cache['ckey']==ckey))[0]
         if len(hit):
             hit = hit[0]
             self.cache[hit]['timestamp'] = ts
         else:
             if self.usedc + size > self.quota:
-                while self.usedc + size > self.quota:
-                    ec = self.cache[0]
-                    self.usedc -= ec['size']
-                    self.cache = np.delete(self.cache, 0, 0)
-                    evict.append(ec)
+                t_usedc = self.usedc
+                t_utility = 0.0
+                t_evict = []
+                t_index = 0
+                while True:
+                    if (t_usedc + size <= self.quota) or (t_utility > utility):
+                        break
+                    ec = self.cache[t_index]
+                    t_usedc -= ec['size']
+                    t_utility += ec['utility']
+                    t_evict.append(t_index)
+                    t_index += 1
+                if (t_usedc + size <= self.quota) and (t_utility <= utility):
+                    self.usedc = t_usedc + size
+                    for eci in t_evict:
+                        evict.append(self.cache[eci])
+                    self.cache = np.delete(self.cache, t_evict, axis=0)
+                    self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
             else:
                 self.usedc += size
                 self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
 
-        self.cache = np.sort(self.cache, order=['utility', 'timestamp'])
+        self.cache = np.sort(self.cache, order=['timestamp'])
         return evict
 
     def get_chunk(self, key):
@@ -63,7 +74,7 @@ class vidicn_cache_rpl(object):
             hit = hit[0]
             chunk = self.cache[hit]
             self.cache[hit]['timestamp'] = ts
-        self.cache = np.sort(self.cache, order=['utility', 'timestamp'])
+        self.cache = np.sort(self.cache, order=['timestamp'])
         return chunk
 
     def del_chunk(self, key):
@@ -81,10 +92,13 @@ class vidicn_cache_rpl(object):
         return len(self.cache)
 
     def is_full(self):
-        return len(self.llist) >= self.quota
+        return self.usedc >= self.quota
 
     def is_hit(self, key):
-        return self.cache.has_key(key)
+        fkey, ckey = key
+        hit = np.where((self.cache['fkey']==fkey) & (self.cache['ckey']==ckey))[0]
+        hit = True if len(hit) else False
+        return hit
 
     def get_val_by_key(self, key):
         """Remark: Pay attention to the differences between this function and
@@ -100,8 +114,9 @@ def test_fn():
     random.seed(123)
     cache = vidicn_cache_rpl(50)
     for i in range(100):
-        evict = cache.add_chunk((random.randint(0,5), random.randint(0,50)), 10*random.random())
-        print "evict --->", evict
+        evict = cache.add_chunk((random.randint(0,5), random.randint(0,50)), random.random(), 10*random.random())
+        if len(evict):
+            print "evict --->", evict
         #time.sleep(0.1)
 
     #print cache.cache
