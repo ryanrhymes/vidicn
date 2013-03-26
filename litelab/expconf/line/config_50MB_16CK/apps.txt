@@ -1,0 +1,2 @@
+srclient@0 /cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/config_50MB_16CK/trace_request.16 $7
+srserver@7 /cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/config_50MB_16CK/trace_request.16
