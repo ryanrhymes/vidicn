@@ -59,6 +59,7 @@ class vidicn_heuristic_0(object):
         return False
 
     def utility(self, fil, chk, siz, dst):
+        # Retrieve effort is NOT really useful is there is single data source.
         retrieve_effort = len(self.router.pathdict[(self.router.vrid,dst)])
         uval = self.freq.get(fil, 0.0) * self.freq.get((fil,chk), 0.0) * siz * retrieve_effort
         return uval
