@@ -15,7 +15,7 @@ from router.common import *
 from messageheader import *
 import random
 
-class vidicn_strategy_all(object):
+class vidicn_strategy_cachedbit(object):
     def __init__(self, router, cachesize):
         self.router = router  # Cache's corresponding router
         self.cache = None
@@ -42,16 +42,30 @@ class vidicn_strategy_all(object):
                 hdr.siz = chunk['size']
             else:
                 logme3(self.logfh, hdr.seq, src, dst, "REQ", 0, fil, chk, hdr.hop)
+                if not hdr.is_cached_bit_set():
+                    if random.random() <= self.get_save_prob(src, dst):
+                        hdr.set_cached_bit()
+                        hdr.crid = self.router.id
                 pass
 
         elif hdr.type == MessageType.RESPONSE:
             logme3(self.logfh, hdr.seq, src, dst, "RSP", 0, fil, chk, hdr.hop)
-            evict = self.cache.add_chunk(cid, siz)
+            evict = []
+            if not self.cache.is_hit(cid):
+                if hdr.is_cached_bit_set() and hdr.crid == self.router.id:
+                    evict = self.cache.add_chunk(cid, siz)
             if len(evict):
                 logme3(self.logfh, hdr.seq, src, dst, "DEL", 0, fil, chk, len(evict))
             logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk, hdr.hop)
 
         return False
+
+    def get_save_prob(self, src, dst):
+        p = 1.0
+        dist = len(self.router.pathdict[(src,dst)]) - 2
+        dist = dist if dist > 0 else 1
+        p = p / dist
+        return p
 
     pass
 
