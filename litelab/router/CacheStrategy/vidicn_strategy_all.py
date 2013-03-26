@@ -47,8 +47,8 @@ class vidicn_strategy_all(object):
         elif hdr.type == MessageType.RESPONSE:
             logme3(self.logfh, hdr.seq, src, dst, "RSP", 0, fil, chk, hdr.hop)
             evict = self.cache.add_chunk(cid, siz)
-            #if evict[0]:
-            #    logme2(self.logfh, hdr.seq, src, dst, "DEL", 0, evict[0])
+            if len(evict):
+                logme3(self.logfh, hdr.seq, src, dst, "DEL", 0, fil, chk, len(evict))
             logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk, hdr.hop)
 
         return False
