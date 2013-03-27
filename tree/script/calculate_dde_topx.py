@@ -72,40 +72,27 @@ def calculate_performance(G, node, request, cache, chunk):
     totalByte = 0.0
     FP = 0.0
     totalFP = 0.0
-    for rf, rc in request:
-        rct = 0 if integral else rc
-        tpath = nx.diameter(G) + 2
-        if 1 in cache[rf][rct][node][1:]:
-            HR += 1.0
-            byteHR += chunk[rf][rc]
-            for x in where(cache[rf,rct,node]==1)[0]:
-                y = len(nx.shortest_path(G, node, x))
-                if tpath > y:
-                    tpath = y
-        FP += chunk[rf][rc] * tpath
-        totalByte += chunk[rf][rc]
-    HR /= len(request)
-    byteHR /= totalByte
-    FPR = (totalByte * M - FP) / (totalByte * M)
+    FPR = 0.0
+
     dDE = calculate_document_download_effort(G, node, cache)
     #print node, "---->", HR, byteHR, FPR, dDE
     return HR, byteHR, FPR, dDE
 
 def calculate_document_download_effort(G, node, cache):
-    N, P, M, _ = cache.shape
     dEffort = 0.0
     N, P, M, _ = cache.shape
+    N = 10
     for i in range(N):
         tde = 0.0
         for j in range(P):
-            tpath = nx.diameter(G) + 2
+            tpath = nx.diameter(G) + 1
             for x in where(cache[i,j,node]==1)[0]:
                 y = len(nx.shortest_path(G, node, x))
                 if tpath > y:
                     tpath = y
             tde += tpath
         dEffort += tde
-    dEffort /= N * P * (nx.diameter(G) + 2)
+    dEffort /= N * P * (nx.diameter(G) + 1)
     return dEffort
 
 def calculate_average_performance(G, request, cache, chunk):
@@ -131,6 +118,6 @@ if __name__ == "__main__":
     cache = load_cache(sys.argv[2])
     chunk = load_chunk(sys.argv[3])
     HR, byteHR, FPR, dDE = calculate_average_performance(G, request, cache, chunk)
-    print HR, byteHR, FPR, dDE
+    print dDE
 
     sys.exit(0)
