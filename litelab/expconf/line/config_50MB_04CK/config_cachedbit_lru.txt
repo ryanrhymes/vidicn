@@ -1,0 +1,28 @@
+# Config file for the content router experiment
+# Available caching strategies are: none, lru, cachedbit, pcachedbit,
+# pushcache, nbsearch, mhnbsearch, mfr
+# Available cache replacement are: lru, lfu
+# Queue size 0 means no size limit. (in packets)
+# Queuing policy: none, fifo, red
+# Bandwidth 0 means no bandwidth limit. (in bytes)
+#
+# Liang Wang @ Dept. Computer Science, University of Helsinki, Finland
+# 2013.03.21 created.
+#
+[vrouter]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/router/router_wrapper.py
+[vrconf]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/vrconf.txt
+[topology]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/topology.txt
+[rtable]:sym
+[queuesize]:0
+[queuepolicy]:none
+[ibandwidth]:0
+[ebandwidth]:0
+[linklossrate]:0.0
+[linkdelay]:0.0
+[cachestg]:vidicn_strategy_cachedbit
+[cacherpl]:vidicn_cache_lru
+[cachesize]:50
+[ihandler]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/ihandler/
+[upperapp]:/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/config_50MB_04CK/apps.txt
+[logdir]:/group/home/cone/lxwang/vidicn_line_cachedbit_lru
+[info]:This is the experiment on Ukko cluster to test INCA on Sprint(1239) POP-level topology.
