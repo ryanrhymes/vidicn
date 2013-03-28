@@ -111,7 +111,7 @@ def calculate_average_performance(G, request, cache, chunk, index):
     return HR, byteHR, FPR, dDE
 
 def test_fn(G, request, cache, chunk):
-    for i in range(0, 100, 2):
+    for i in range(0, 100, 10):
         HR, byteHR, FPR, dDE = calculate_average_performance(G, request, cache, chunk, i)
         print i, dDE
     pass
