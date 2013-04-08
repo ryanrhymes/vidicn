@@ -33,6 +33,7 @@ class vidicn_cache_rpl(object):
 
     def add_chunk(self, key, utility, size):
         evict = []
+        cached = False
         fkey, ckey = key
         ts = time.time()
         hit = np.where((self.cache['fkey']==fkey) & (self.cache['ckey']==ckey))[0]
@@ -55,17 +56,19 @@ class vidicn_cache_rpl(object):
                     t_evict.append(t_index)
                     t_index += 1
                 if (t_usedc + size <= self.quota) and (t_utility <= utility):
+                    cached = True
                     self.usedc = t_usedc + size
                     for eci in t_evict:
                         evict.append(self.cache[eci])
                     self.cache = np.delete(self.cache, t_evict, axis=0)
                     self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
             else:
+                cached = True
                 self.usedc += size
                 self.cache = np.append(self.cache, np.array([(fkey, ckey, utility, size, ts)], dtype=self.dtype), axis=0)
 
         self.cache = np.sort(self.cache, order=['utility', 'timestamp'])
-        return evict
+        return evict, cached
 
     def get_chunk(self, key, utility):
         chunk = None

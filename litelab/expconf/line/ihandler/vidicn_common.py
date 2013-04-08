@@ -7,7 +7,7 @@ from numpy import *
 
 SEED = 123   # Random seed for the simulation
 N = 100      # Number of files
-P = 4       # Number of chunks in a file
+P = 4        # Number of chunks in a file
 
 
 def load_request(ifn):

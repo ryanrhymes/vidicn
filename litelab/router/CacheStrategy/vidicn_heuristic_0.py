@@ -51,11 +51,11 @@ class vidicn_heuristic_0(object):
 
         elif hdr.type == MessageType.RESPONSE:
             logme3(self.logfh, hdr.seq, src, dst, "RSP", 0, fil, chk, hdr.hop)
-            evict = self.cache.add_chunk(cid, self.utility(fil,chk,siz,src), siz)
-            if len(evict):
-                logme3(self.logfh, hdr.seq, src, dst, "DEL", 0, fil, chk, len(evict))
-            logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk, hdr.hop)
-
+            evict, cached = self.cache.add_chunk(cid, self.utility(fil,chk,siz,src), siz)
+            if cached:
+                logme3(self.logfh, hdr.seq, src, dst, "ADD", 0, fil, chk, hdr.hop)
+            for eo in evict:
+                logme3(self.logfh, hdr.seq, src, dst, "DEL", 0, eo['fkey'], eo['ckey'], hdr.hop)
         return False
 
     def utility(self, fil, chk, siz, dst):
