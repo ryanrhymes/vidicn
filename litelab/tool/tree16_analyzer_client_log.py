@@ -15,7 +15,7 @@ import os
 import sys
 from multiprocessing import *
 
-sys.path.append('/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/line/ihandler/')
+sys.path.append('/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/litelab/expconf/tree16/ihandler/')
 from vidicn_common import *
 
 D2SERVER = 7.0  # Hops to the server
