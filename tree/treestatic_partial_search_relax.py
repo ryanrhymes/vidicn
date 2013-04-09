@@ -26,6 +26,7 @@ N = 100      # Number of files
 P = None     # Number of chunks in a file
 K = None     # Number of copies on the path
 C = 50       # Cache size
+R = 1        # Search radius
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "tree_modelstatic_partial_relax"
@@ -86,8 +87,22 @@ def construct_topology():
 
 def cost_func(G, x, y):
     c = len(nx.shortest_path(G, x, y))
+    srng = searchable_nodes(G, x, 0, R)
+    c = 2*30 if y not in srng else c
     c = c+3 if x*y == 0 else c
     return c
+
+def searchable_nodes(G, x, y, r):
+    path = nx.shortest_path(G, x, y)
+    srng = set(path)
+    for n in G.nodes():
+        if n in srng:
+            continue
+        for m in path:
+            if len(nx.shortest_path(G, m, n)) - 1 <= r:
+                srng.add(n)
+                break
+    return srng
 
 # Model Solver
 
@@ -189,7 +204,7 @@ class ModelStatic(object):
             for j in range(P):
                 for k in L:
                     constraints = []
-                    for l in range(M):
+                    for l in searchable_nodes(self.topology, k, 0, R):
                         i_j_k_l = '%i_%i_%i_%i' % (i, j, k, l)
                         constraints.append(self.x_vars[i_j_k_l])
                     self.problem += lpSum(constraints) >= 1, ("natural constraint 2 %i_%i_%i_%i" % (i,j,k,l))
