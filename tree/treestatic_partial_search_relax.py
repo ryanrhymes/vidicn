@@ -26,7 +26,7 @@ N = 100      # Number of files
 P = None     # Number of chunks in a file
 K = None     # Number of copies on the path
 C = 50       # Cache size
-R = 1        # Search radius
+R = 0        # Search radius
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "tree_modelstatic_partial_relax"
