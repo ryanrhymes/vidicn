@@ -2,17 +2,18 @@
 
 CSZ=$1
 CHK=$2
-CPY=10
+RAD=$3
+CPY=1
 LOG="tree_xcopy_${CHK}chunk_csz${CSZ}.txt"
 
 APP1="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/generate_request.py"
-APP2="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/tree/treestatic_partial_relax.py"
+APP2="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/tree/treestatic_partial_search_relax.py"
 APP3="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/tree/calculate_performance.py"
 
 $APP1 $CHK > trace_request.$CHK
 
 for x in `seq 1 $CPY`; do
-    $APP2 $CHK $x $CSZ
+    $APP2 $CHK $x $CSZ $RAD
 done
 
 rm -rf $LOG

@@ -26,7 +26,7 @@ N = 100      # Number of files
 P = None     # Number of chunks in a file
 K = None     # Number of copies on the path
 C = 50       # Cache size
-R = 0        # Search radius
+R = None     # Search radius
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "tree_modelstatic_partial_relax"
@@ -237,6 +237,7 @@ if __name__ == "__main__":
     K = int(sys.argv[2])
     TKN = "%i.%i" % (P, K)
     C = int(sys.argv[3])
+    R = int(sys.argv[4])
     obj = ModelStatic()
     obj.init_model()
     obj.output_chunk_info(obj.chunkSize, obj.chunkPopularity)

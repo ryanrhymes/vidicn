@@ -14,6 +14,7 @@ import sys
 import networkx as nx
 
 from numpy import *
+from multiprocessing import *
 
 
 def construct_topology():
@@ -63,10 +64,11 @@ def get_model_parameter(lines):
         routers = max(routers, int(z))
     return files, chunks, routers
 
-def calculate_performance(G, node, request, cache, chunk):
+def calculate_performance(param):
+    G, node, request, cache, chunk = param
     N, P, M, _ = cache.shape
     integral = True if P == 1 else False
-    print "calculating performance ... [%s caching]" % ( "integral" if integral else "partial" )
+    # print "calculating performance ... [%s caching]" % ( "integral" if integral else "partial" )
     HR = 0.0
     byteHR = 0.0
     totalByte = 0.0
@@ -110,6 +112,29 @@ def calculate_document_download_effort(G, node, cache):
     return dEffort
 
 def calculate_average_performance(G, request, cache, chunk):
+    nodes = range(8, 16)
+    param = []
+    for n in nodes:
+        param.append((G, n, request, cache, chunk))
+    HR, byteHR, FPR, dDE = 0.0, 0.0, 0.0, 0.0
+    p = Pool(processes=cpu_count())
+    it =p.imap(calculate_performance, param)
+    while True:
+        try:
+            tHR, tbyteHR, tFPR, tdDE = it.next()
+            HR += tHR
+            byteHR += tbyteHR
+            FPR += tFPR
+            dDE += tdDE
+        except StopIteration:
+            break
+    HR /= len(nodes)
+    byteHR /= len(nodes)
+    FPR /= len(nodes)
+    dDE /= len(nodes)
+    return HR, byteHR, FPR, dDE
+
+def calculate_average_performance_old(G, request, cache, chunk):
     nodes = range(8, 16)
     HR, byteHR, FPR, dDE = 0.0, 0.0, 0.0, 0.0
     for n in nodes:
