@@ -84,6 +84,8 @@ def calculate_performance(param):
                 y = len(nx.shortest_path(G, node, x))
                 if tpath > y:
                     tpath = y
+        else:
+            tpath = len(nx.shortest_path(G, 8, 0)) - 1
         FP += chunk[rf][rc] * tpath
         totalByte += chunk[rf][rc]
     HR /= len(request)

@@ -3,7 +3,7 @@
 CSZ=$1
 CHK=$2
 RAD=$3
-CPY=1
+CPY=10
 LOG="tree_xcopy_${CHK}chunk_csz${CSZ}.txt"
 
 APP1="/cs/fs/home/lxwang/cone/Papers/lxwang/vidicn/code/generate_request.py"
