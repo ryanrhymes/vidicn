@@ -30,7 +30,7 @@ R = 0        # Search radius
 
 GAP = 0.01   # MIP gap for the solver
 LOG = "tree_modelstatic_partial_relax"
-TKN = None # time.strftime("%Y%m%d%H%M%S")
+TKN = None   # time.strftime("%Y%m%d%H%M%S")
 
 # Help functions: Prepare model parameters before solving the LIP problem
 
