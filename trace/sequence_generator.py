@@ -15,19 +15,21 @@ import os
 import sys
 import random
 import operator
+import bisect
 
 
 def sequence_generator(distr, count):
     distr = sorted(distr, key=operator.itemgetter(1))
+    intvl = [distr[0][1]]
     seqll = list()
-    # make intervals
+    # construct intervals
     for i in range(1, len(distr)):
-        distr[i][1] += distr[i-1][1]
+        intvl.append(intvl[i-1] + distr[i][1])
     # generate sequence
     for i in range(count):
-        tmpi = random.randint(0, distr[-1][1])
-        y = filter(lambda x: x[1] - tmpi >= 0, distr)[0]
-        seqll.append(y)
+        tmpi = random.randint(0, intvl[-1]-1)
+        idx = bisect.bisect_right(intvl, tmpi)
+        seqll.append(distr[idx])
     return seqll
 
 if __name__ == "__main__":

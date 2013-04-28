@@ -5,6 +5,7 @@ import sys
 
 from sequence_generator import sequence_generator
 
+COUNT = 100000    # sequence length
 
 def generate_request(ifn):
     distr = list()
@@ -18,7 +19,7 @@ def generate_request(ifn):
         finfo.append([oname, osize, ofrq])
 
     print "generating sequece ..."
-    seqll = sequence_generator(distr, 10)
+    seqll = sequence_generator(distr, COUNT)
 
     print "writing to file ..."
     ofn = open('youtube.request.trace', 'w')
