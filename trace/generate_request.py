@@ -5,7 +5,7 @@ import sys
 
 from sequence_generator import sequence_generator
 
-COUNT = 100000    # sequence length
+COUNT = 1000000    # sequence length
 
 def generate_request(ifn):
     distr = list()

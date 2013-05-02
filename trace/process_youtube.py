@@ -54,5 +54,5 @@ def write_trace(ofn, obj):
 if __name__ == "__main__":
     obj, avglength = parsing(sys.argv[1])
     obj = format_trace(obj, avglength)
-    write_trace("youtube.trace", obj)
+    write_trace("youtube.file.trace", obj)
     sys.exit(0)
