@@ -6,6 +6,8 @@ import sys
 from sequence_generator import sequence_generator
 
 COUNT = 1000000    # sequence length
+CSETN = 100000     # the size of content set
+
 
 def generate_request(ifn):
     distr = list()
@@ -17,6 +19,7 @@ def generate_request(ifn):
         oname, osize, ofrq = flds[0], float(flds[1]), float(flds[2])
         distr.append([oname, ofrq])
         finfo.append([oname, osize, ofrq])
+    finfo = finfo[:CSETN]
 
     print "generating sequece ..."
     seqll = sequence_generator(distr, COUNT)
