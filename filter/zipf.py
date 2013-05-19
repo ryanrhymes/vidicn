@@ -16,10 +16,10 @@ def zipf(fnum, s):
 
 def sequence_generator(distr, count):
     distr = sorted(distr, key=operator.itemgetter(1))
+    intvl = [distr[0][1]]
     seqll = list()
     # construct intervals
     for i in range(1, len(distr)):
-        print intvl[i-1], distr[i][1]
         intvl.append(intvl[i-1] + distr[i][1])
     # generate sequence
     for i in range(count):
