@@ -18,7 +18,7 @@ def test_filter(cache, reqs):
         r = (r,0)
         freq[r] = freq.get(r, 0.0) + 1
         u = freq[r] * s
-        if not cache.is_hit(r) and cache.is_full():
+        if not cache.is_hit(r) and rounds > 1000:
             miss.append(r[0])
         cache.add_chunk(r, u, s)
         # Print out info

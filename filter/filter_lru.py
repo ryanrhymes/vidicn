@@ -15,7 +15,7 @@ def test_filter(cache, reqs):
     t0 = time.time()
     for r, s in reqs:
         r = (r,0)
-        if not cache.is_hit(r) and cache.is_full():
+        if not cache.is_hit(r) and rounds > 1000:
             miss.append(r[0])
         cache.add_chunk(r, s)
         # Print out info
